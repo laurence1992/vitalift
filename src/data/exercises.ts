@@ -25,18 +25,18 @@ export type DayExercise = Exercise & {
 };
 
 export const exercises: Exercise[] = [
-  { id: "db-incline-press", name: "DB incline press", image: dbInclinePress, videoUrl: "https://www.youtube.com/watch?v=jMQA3XtJSgo" },
-  { id: "lat-pulldown", name: "Lat pulldown", image: latPulldown, videoUrl: "https://www.youtube.com/watch?v=JGeRYIZdojU" },
-  { id: "seated-row", name: "Seated row", image: seatedCableRow, videoUrl: "https://www.youtube.com/watch?v=lJoozxC0Rns" },
-  { id: "db-shoulder-press", name: "DB shoulder press", image: dbShoulderPress, videoUrl: "https://www.youtube.com/watch?v=HzIiNhHhhtA" },
-  { id: "lateral-raises", name: "Lateral raises", image: lateralRaises, videoUrl: "https://www.youtube.com/watch?v=OuG1smZTsQQ" },
-  { id: "triceps-pushdown", name: "Triceps pushdown", image: tricepsPushdown, videoUrl: "https://www.youtube.com/watch?v=LXkCrxn3caQ" },
-  { id: "biceps-curls", name: "Biceps curls", image: bicepsCurls, videoUrl: "https://www.youtube.com/watch?v=MtXdEcW3Eog" },
-  { id: "leg-press", name: "Leg press", image: legPress, videoUrl: "https://www.youtube.com/watch?v=qCR9bN3G1t4" },
-  { id: "hip-thrust", name: "Hip thrust", image: hipThrust, videoUrl: "https://www.youtube.com/watch?v=pF17m_CXfL0" },
-  { id: "romanian-deadlift", name: "Romanian deadlift (DB)", image: romanianDeadlift, videoUrl: "https://www.youtube.com/watch?v=5WxMW-Fu5KU" },
-  { id: "bulgarian-split-squat", name: "Bulgarian split squat", image: bulgarianSplitSquat, videoUrl: "https://www.youtube.com/watch?v=vgn7bSXkgkA" },
-  { id: "back-extension", name: "Back extension (glutes)", image: backExtension, videoUrl: "https://www.youtube.com/watch?v=ENXyYltB7CM" },
+  { id: "db-incline-press", name: "DB incline press", image: "", videoUrl: "https://www.youtube.com/watch?v=jMQA3XtJSgo" },
+  { id: "lat-pulldown", name: "Lat pulldown", image: "", videoUrl: "https://www.youtube.com/watch?v=JGeRYIZdojU" },
+  { id: "seated-row", name: "Seated row", image: "", videoUrl: "https://www.youtube.com/watch?v=lJoozxC0Rns" },
+  { id: "db-shoulder-press", name: "DB shoulder press", image: "", videoUrl: "https://www.youtube.com/watch?v=HzIiNhHhhtA" },
+  { id: "lateral-raises", name: "Lateral raises", image: "", videoUrl: "https://www.youtube.com/watch?v=OuG1smZTsQQ" },
+  { id: "triceps-pushdown", name: "Triceps pushdown", image: "", videoUrl: "https://www.youtube.com/watch?v=LXkCrxn3caQ" },
+  { id: "biceps-curls", name: "Biceps curls", image: "", videoUrl: "https://www.youtube.com/watch?v=MtXdEcW3Eog" },
+  { id: "leg-press", name: "Leg press", image: "", videoUrl: "https://www.youtube.com/watch?v=qCR9bN3G1t4" },
+  { id: "hip-thrust", name: "Hip thrust", image: "", videoUrl: "https://www.youtube.com/watch?v=pF17m_CXfL0" },
+  { id: "romanian-deadlift", name: "Romanian deadlift (DB)", image: "", videoUrl: "https://www.youtube.com/watch?v=5WxMW-Fu5KU" },
+  { id: "bulgarian-split-squat", name: "Bulgarian split squat", image: "", videoUrl: "https://www.youtube.com/watch?v=vgn7bSXkgkA" },
+  { id: "back-extension", name: "Back extension (glutes)", image: "", videoUrl: "https://www.youtube.com/watch?v=ENXyYltB7CM" },
 ];
 
 export type WorkoutDay = {
