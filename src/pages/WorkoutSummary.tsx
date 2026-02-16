@@ -19,6 +19,12 @@ export default function WorkoutSummary() {
 
   const day = workoutDays.find((d) => d.id === workout.dayId);
 
+  const totalVolume = workout.exercises.reduce(
+    (sum, exLog) =>
+      sum + exLog.sets.reduce((s, set) => s + (set.weight ?? 0) * (set.reps ?? 0), 0),
+    0
+  );
+
   return (
     <div className="min-h-screen pb-20">
       <div className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-background/95 backdrop-blur-md px-4 py-3">
@@ -36,11 +42,34 @@ export default function WorkoutSummary() {
       </div>
 
       <div className="space-y-3 px-4 pt-4">
+        {/* Total volume banner */}
+        {totalVolume > 0 && (
+          <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-center">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Total Volume</p>
+            <p className="text-2xl font-bold text-primary">{totalVolume.toLocaleString()} kg</p>
+          </div>
+        )}
+
         {workout.exercises.map((exLog) => {
           const ex = allExercises.find((e) => e.id === exLog.exerciseId);
           const volume = exLog.sets.reduce(
             (sum, s) => sum + (s.weight ?? 0) * (s.reps ?? 0),
             0
+          );
+
+          // Best set: highest weight, reps as tiebreaker
+          const bestSet = exLog.sets.reduce<{ weight: number; reps: number } | null>(
+            (best, s) => {
+              if (s.weight == null || s.reps == null) return best;
+              if (
+                !best ||
+                s.weight > best.weight ||
+                (s.weight === best.weight && s.reps > best.reps)
+              )
+                return { weight: s.weight, reps: s.reps };
+              return best;
+            },
+            null
           );
 
           return (
@@ -62,11 +91,15 @@ export default function WorkoutSummary() {
                 )}
                 <div className="flex-1">
                   <p className="text-sm font-semibold">{ex?.name || exLog.exerciseId}</p>
-                  {volume > 0 && (
-                    <p className="text-xs text-muted-foreground">
-                      Volume: {volume.toLocaleString()} kg
-                    </p>
-                  )}
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    {volume > 0 && <span>Vol: {volume.toLocaleString()} kg</span>}
+                    {bestSet && (
+                      <span className="flex items-center gap-1">
+                        <Trophy className="h-3 w-3 text-primary" />
+                        {bestSet.weight}kg × {bestSet.reps}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 

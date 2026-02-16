@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Dumbbell, Play, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Dumbbell, ChevronRight } from "lucide-react";
 import { workoutDays } from "@/data/exercises";
 import { getRecentWorkouts } from "@/lib/storage";
 import { format } from "date-fns";
@@ -12,12 +11,12 @@ export default function Index() {
   return (
     <div className="min-h-screen pb-20">
       {/* Header */}
-      <div className="bg-gradient-to-br from-primary/20 to-primary/5 px-5 pb-8 pt-12">
+      <div className="bg-gradient-to-br from-primary/20 to-accent/5 px-5 pb-8 pt-12">
         <div className="flex items-center gap-3 mb-1">
           <Dumbbell className="h-7 w-7 text-primary" />
-          <h1 className="text-2xl font-bold tracking-tight">Workout Tracker</h1>
+          <h1 className="text-2xl font-bold tracking-tight">VitaLift</h1>
         </div>
-        <p className="text-muted-foreground text-sm">Let's crush it today 💪</p>
+        <p className="text-muted-foreground text-sm">Stronger Every Session. 💪</p>
       </div>
 
       <div className="px-5 -mt-4 space-y-6">
@@ -47,6 +46,11 @@ export default function Index() {
             <div className="space-y-2">
               {recent.map((w) => {
                 const day = workoutDays.find((d) => d.id === w.dayId);
+                const totalVolume = w.exercises.reduce(
+                  (sum, ex) =>
+                    sum + ex.sets.reduce((s, set) => s + (set.weight ?? 0) * (set.reps ?? 0), 0),
+                  0
+                );
                 return (
                   <button
                     key={w.id}
@@ -59,6 +63,7 @@ export default function Index() {
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {format(new Date(w.date), "MMM d, yyyy")}
+                        {totalVolume > 0 && ` · ${totalVolume.toLocaleString()} kg vol`}
                       </p>
                     </div>
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />
