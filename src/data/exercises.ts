@@ -61,6 +61,7 @@ export const workoutDays: WorkoutDay[] = [
       { ...e("lateral-raises"), targetSets: 3, targetReps: "12–15" },
       { ...e("triceps-pushdown"), targetSets: "2–3", targetReps: "12" },
       { ...e("biceps-curls"), targetSets: "2–3", targetReps: "12" },
+      { id: "core-upper", name: "Core", image: "", videoUrl: "", targetSets: 3, targetReps: "—" },
     ],
   },
   {
@@ -87,6 +88,7 @@ export const workoutDays: WorkoutDay[] = [
       { ...e("lateral-raises"), targetSets: 3, targetReps: "15" },
       { ...e("triceps-pushdown"), targetSets: 2, targetReps: "12" },
       { ...e("biceps-curls"), targetSets: 2, targetReps: "12" },
+      { id: "core-upper", name: "Core", image: "", videoUrl: "", targetSets: 3, targetReps: "—" },
     ],
   },
   {
