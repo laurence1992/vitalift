@@ -225,7 +225,7 @@ function ExerciseCard({
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden p-4 space-y-3">
       {/* Exercise name */}
-      <h3 className="text-lg font-bold">{exercise.name}</h3>
+      <h3 className="text-lg font-bold text-foreground">{exercise.name || "Unnamed Exercise"}</h3>
       {exercise.notes && (
         <p className="text-xs text-primary/80">{exercise.notes}</p>
       )}
