@@ -101,9 +101,9 @@ export const workoutDays: WorkoutDay[] = [
     label: "Day 4",
     subtitle: "Lower (Glute Focus)",
     exercises: [
+      { ...e("leg-press"), targetSets: 3, targetReps: "10–15", notes: "Feet higher on platform" },
       { ...e("hip-thrust"), targetSets: 4, targetReps: "8–12" },
       { ...e("romanian-deadlift"), targetSets: 3, targetReps: "8–10" },
-      { ...e("leg-press"), targetSets: 3, targetReps: "10–15", notes: "Feet higher on platform" },
       { ...e("bulgarian-split-squat"), targetSets: 3, targetReps: "8–10/leg" },
       { ...e("back-extension"), targetSets: 3, targetReps: "12–15" },
       { id: "core", name: "Core", image: coreExercise, videoUrl: "", targetSets: 3, targetReps: "12–20 or 30–45s" },
