@@ -35,7 +35,7 @@ export const exercises: Exercise[] = [
   { id: "leg-press", name: "Leg press", image: legPress, videoUrl: "https://www.youtube.com/watch?v=qCR9bN3G1t4" },
   { id: "hip-thrust", name: "Hip thrust", image: hipThrust, videoUrl: "https://www.youtube.com/watch?v=pF17m_CXfL0" },
   { id: "romanian-deadlift", name: "Romanian deadlift (DB)", image: romanianDeadlift, videoUrl: "https://www.youtube.com/watch?v=5WxMW-Fu5KU" },
-  { id: "bulgarian-split-squat", name: "Bulgarian split squat", image: "", videoUrl: "https://www.youtube.com/watch?v=vgn7bSXkgkA" },
+  { id: "bulgarian-split-squat", name: "Bulgarian split squat", image: bulgarianSplitSquat, videoUrl: "https://www.youtube.com/watch?v=vgn7bSXkgkA" },
   { id: "back-extension", name: "Back extension (glutes)", image: "", videoUrl: "https://www.youtube.com/watch?v=ENXyYltB7CM" },
 ];
 
