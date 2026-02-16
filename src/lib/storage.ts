@@ -57,3 +57,38 @@ export function getRecentWorkouts(limit = 5): WorkoutLog[] {
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, limit);
 }
+
+/** Personal best: highest weight (then highest reps as tiebreaker) across all workouts */
+export function getPersonalBest(
+  exerciseId: string
+): { weight: number; reps: number } | null {
+  const workouts = getWorkouts();
+  let best: { weight: number; reps: number } | null = null;
+
+  for (const w of workouts) {
+    const exLog = w.exercises.find((e) => e.exerciseId === exerciseId);
+    if (!exLog) continue;
+    for (const s of exLog.sets) {
+      if (s.weight == null || s.reps == null) continue;
+      if (
+        !best ||
+        s.weight > best.weight ||
+        (s.weight === best.weight && s.reps > best.reps)
+      ) {
+        best = { weight: s.weight, reps: s.reps };
+      }
+    }
+  }
+  return best;
+}
+
+/** Get the most recent workout for a given dayId, excluding a specific workout */
+export function getLastWorkoutForDay(
+  dayId: string,
+  excludeWorkoutId?: string
+): WorkoutLog | null {
+  const workouts = getWorkouts()
+    .filter((w) => w.dayId === dayId && w.id !== excludeWorkoutId)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  return workouts[0] || null;
+}
