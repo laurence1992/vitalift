@@ -166,16 +166,25 @@ export default function WorkoutSession() {
           const sets = exerciseLogs[exKey] || [];
           const pb = getPersonalBest(ex.id);
           const exVolume = sets.reduce((s, set) => s + (set.weight ?? 0) * (set.reps ?? 0), 0);
+          const isFinisher = ex.notes === "Finisher";
+          const prevEx = exIdx > 0 ? day.exercises[exIdx - 1] : null;
+          const isFirstFinisher = isFinisher && prevEx?.notes !== "Finisher";
 
           return (
-            <ExerciseCard
-              key={exKey}
-              exercise={ex}
-              sets={sets}
-              pb={pb}
-              exerciseVolume={exVolume}
-              onUpdateSet={(setIdx, field, value) => updateSet(exKey, setIdx, field, value)}
-            />
+            <div key={exKey} className={isFinisher && !isFirstFinisher ? "-mt-2" : ""}>
+              {isFirstFinisher && (
+                <p className="text-xs font-semibold uppercase tracking-wide text-primary/70 mb-2 mt-2">
+                  🔥 Finisher
+                </p>
+              )}
+              <ExerciseCard
+                exercise={ex}
+                sets={sets}
+                pb={pb}
+                exerciseVolume={exVolume}
+                onUpdateSet={(setIdx, field, value) => updateSet(exKey, setIdx, field, value)}
+              />
+            </div>
           );
         })}
 
