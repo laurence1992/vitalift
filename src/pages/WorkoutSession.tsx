@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, ExternalLink, Check, RefreshCw, Trophy, Copy } from "lucide-react";
+import { ArrowLeft, ExternalLink, Check, RefreshCw, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -254,34 +254,15 @@ function ExerciseCard({
       {exercise.videoUrl && exercise.videoUrl.trim() !== "" && (() => {
         const cleanUrl = exercise.videoUrl.trim().startsWith("http") ? exercise.videoUrl.trim() : `https://${exercise.videoUrl.trim()}`;
         return (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                try {
-                  const w = window.open(cleanUrl, "_blank", "noopener,noreferrer");
-                  if (!w) {
-                    import("@/hooks/use-toast").then(m => m.toast({ title: "Link blocked in this browser. Use Copy Demo Link." }));
-                  }
-                } catch {
-                  import("@/hooks/use-toast").then(m => m.toast({ title: "Link blocked in this browser. Use Copy Demo Link." }));
-                }
-              }}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
-            >
-              <ExternalLink className="h-3.5 w-3.5" />
-              Watch Demo
-            </button>
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(cleanUrl);
-                import("@/hooks/use-toast").then(m => m.toast({ title: "Link copied — paste into browser" }));
-              }}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-muted/50 px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted"
-            >
-              <Copy className="h-3.5 w-3.5" />
-              Copy Link
-            </button>
-          </div>
+          <a
+            href={cleanUrl}
+            target="_self"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground no-underline"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+            Watch Demo
+          </a>
         );
       })()}
 

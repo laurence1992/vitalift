@@ -1,12 +1,10 @@
-import { ExternalLink, Search, Copy } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { ExternalLink, Search } from "lucide-react";
 import { useState } from "react";
 import { exercises } from "@/data/exercises";
 import { workoutDays } from "@/data/exercises";
 import { Input } from "@/components/ui/input";
 
 export default function Exercises() {
-  const { toast } = useToast();
   const [search, setSearch] = useState("");
 
   const filtered = exercises.filter((ex) =>
@@ -59,34 +57,15 @@ export default function Exercises() {
               {ex.videoUrl && ex.videoUrl.trim() !== "" && (() => {
                 const cleanUrl = ex.videoUrl.trim().startsWith("http") ? ex.videoUrl.trim() : `https://${ex.videoUrl.trim()}`;
                 return (
-                  <div className="flex items-center gap-2 mt-1">
-                    <button
-                      onClick={() => {
-                        try {
-                          const w = window.open(cleanUrl, "_blank", "noopener,noreferrer");
-                          if (!w) {
-                            toast({ title: "Link blocked in this browser. Use Copy Demo Link." });
-                          }
-                        } catch {
-                          toast({ title: "Link blocked in this browser. Use Copy Demo Link." });
-                        }
-                      }}
-                      className="inline-flex items-center gap-1 text-xs text-primary"
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                      Watch Demo
-                    </button>
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(cleanUrl);
-                        toast({ title: "Link copied — paste into browser" });
-                      }}
-                      className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary"
-                    >
-                      <Copy className="h-3 w-3" />
-                      Copy Link
-                    </button>
-                  </div>
+                  <a
+                    href={cleanUrl}
+                    target="_self"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 mt-1 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-semibold no-underline"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                    Watch Demo
+                  </a>
                 );
               })()}
             </div>
