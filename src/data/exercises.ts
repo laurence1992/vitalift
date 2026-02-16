@@ -36,7 +36,7 @@ export const exercises: Exercise[] = [
   { id: "hip-thrust", name: "Hip thrust", image: hipThrust, videoUrl: "https://www.youtube.com/watch?v=pF17m_CXfL0" },
   { id: "romanian-deadlift", name: "Romanian deadlift (DB)", image: romanianDeadlift, videoUrl: "https://www.youtube.com/watch?v=5WxMW-Fu5KU" },
   { id: "bulgarian-split-squat", name: "Bulgarian split squat", image: bulgarianSplitSquat, videoUrl: "https://www.youtube.com/watch?v=vgn7bSXkgkA" },
-  { id: "back-extension", name: "Back extension (glutes)", image: "", videoUrl: "https://www.youtube.com/watch?v=ENXyYltB7CM" },
+  { id: "back-extension", name: "Back extension (glutes)", image: backExtension, videoUrl: "https://www.youtube.com/watch?v=ENXyYltB7CM" },
 ];
 
 export type WorkoutDay = {
