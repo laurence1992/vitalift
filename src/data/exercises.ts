@@ -75,6 +75,7 @@ export const workoutDays: WorkoutDay[] = [
       { ...e("hip-thrust"), targetSets: 4, targetReps: "10" },
       { ...e("romanian-deadlift"), targetSets: 3, targetReps: "8–10" },
       { ...e("bulgarian-split-squat"), targetSets: 3, targetReps: "8/leg" },
+      { ...e("back-extension"), targetSets: 3, targetReps: "12" },
       { id: "core", name: "Core", image: "", videoUrl: "", targetSets: 3, targetReps: "—" },
     ],
   },
