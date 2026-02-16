@@ -137,7 +137,14 @@ export default function WorkoutSession() {
         </div>
       </div>
 
-      <div className="space-y-3 px-4 pt-4">
+      <div className="space-y-4 px-4 pt-4">
+        {/* Day note */}
+        {day.dayNote && (
+          <p className="text-xs text-primary/80 italic text-center rounded-lg bg-primary/5 px-3 py-2">
+            {day.dayNote}
+          </p>
+        )}
+
         {/* Repeat Last Workout */}
         <Button
           variant="outline"
