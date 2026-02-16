@@ -25,7 +25,7 @@ export type DayExercise = Exercise & {
 };
 
 export const exercises: Exercise[] = [
-  { id: "db-incline-press", name: "DB incline press", image: "", videoUrl: "https://www.youtube.com/watch?v=jMQA3XtJSgo" },
+  { id: "db-incline-press", name: "DB incline press", image: dbInclinePress, videoUrl: "https://www.youtube.com/watch?v=jMQA3XtJSgo" },
   { id: "lat-pulldown", name: "Lat pulldown", image: "", videoUrl: "https://www.youtube.com/watch?v=JGeRYIZdojU" },
   { id: "seated-row", name: "Seated row", image: "", videoUrl: "https://www.youtube.com/watch?v=lJoozxC0Rns" },
   { id: "db-shoulder-press", name: "DB shoulder press", image: "", videoUrl: "https://www.youtube.com/watch?v=HzIiNhHhhtA" },
