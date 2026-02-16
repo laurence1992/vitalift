@@ -54,11 +54,16 @@ export default function Exercises() {
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold truncate">{ex.name}</p>
               <p className="text-xs text-muted-foreground mt-0.5">{exerciseDays(ex.id)}</p>
-              {ex.videoUrl && (
+              {ex.videoUrl && ex.videoUrl.trim() !== "" && (
                 <a
-                  href={ex.videoUrl}
+                  href={ex.videoUrl.trim().startsWith("http") ? ex.videoUrl.trim() : `https://${ex.videoUrl.trim()}`}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const cleanUrl = ex.videoUrl.trim().startsWith("http") ? ex.videoUrl.trim() : `https://${ex.videoUrl.trim()}`;
+                    window.open(cleanUrl, "_blank", "noopener,noreferrer");
+                  }}
                   className="inline-flex items-center gap-1 text-xs text-primary mt-1"
                 >
                   <ExternalLink className="h-3 w-3" />
