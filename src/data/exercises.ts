@@ -10,6 +10,7 @@ import hipThrust from "@/assets/exercises/hip-thrust.jpg";
 import romanianDeadlift from "@/assets/exercises/romanian-deadlift.jpg";
 import bulgarianSplitSquat from "@/assets/exercises/bulgarian-split-squat.png";
 import backExtension from "@/assets/exercises/back-extension.jpg";
+import coreExercise from "@/assets/exercises/core.png";
 
 export type Exercise = {
   id: string;
@@ -63,7 +64,7 @@ export const workoutDays: WorkoutDay[] = [
       { ...e("lateral-raises"), targetSets: 3, targetReps: "12–15" },
       { ...e("triceps-pushdown"), targetSets: "2–3", targetReps: "12" },
       { ...e("biceps-curls"), targetSets: "2–3", targetReps: "12" },
-      { id: "core", name: "Core", image: "", videoUrl: "", targetSets: 3, targetReps: "—" },
+      { id: "core", name: "Core", image: coreExercise, videoUrl: "", targetSets: 3, targetReps: "—" },
     ],
   },
   {
@@ -76,7 +77,7 @@ export const workoutDays: WorkoutDay[] = [
       { ...e("romanian-deadlift"), targetSets: 3, targetReps: "8–10" },
       { ...e("bulgarian-split-squat"), targetSets: 3, targetReps: "8/leg" },
       { ...e("back-extension"), targetSets: 3, targetReps: "12" },
-      { id: "core", name: "Core", image: "", videoUrl: "", targetSets: 3, targetReps: "—" },
+      { id: "core", name: "Core", image: coreExercise, videoUrl: "", targetSets: 3, targetReps: "—" },
     ],
   },
   {
@@ -91,7 +92,7 @@ export const workoutDays: WorkoutDay[] = [
       { ...e("db-shoulder-press"), targetSets: 3, targetReps: "10" },
       { ...e("lateral-raises"), targetSets: 3, targetReps: "15" },
       { id: "arms-superset", name: "Arms superset (biceps + triceps)", image: "", videoUrl: "", targetSets: 2, targetReps: "each" },
-      { id: "core", name: "Core", image: "", videoUrl: "", targetSets: 3, targetReps: "—" },
+      { id: "core", name: "Core", image: coreExercise, videoUrl: "", targetSets: 3, targetReps: "—" },
     ],
   },
   {
@@ -104,7 +105,7 @@ export const workoutDays: WorkoutDay[] = [
       { ...e("leg-press"), targetSets: 3, targetReps: "12", notes: "Feet higher on platform" },
       { ...e("bulgarian-split-squat"), targetSets: 3, targetReps: "8/leg" },
       { ...e("back-extension"), targetSets: 3, targetReps: "12" },
-      { id: "core", name: "Core", image: "", videoUrl: "", targetSets: 3, targetReps: "—" },
+      { id: "core", name: "Core", image: coreExercise, videoUrl: "", targetSets: 3, targetReps: "—" },
     ],
   },
 ];
