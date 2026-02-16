@@ -296,7 +296,7 @@ function ExerciseCard({
               placeholder="0"
               value={set.weight ?? ""}
               onChange={(e) => onUpdateSet(i, "weight", e.target.value)}
-              className="h-10 bg-background text-center"
+              className="h-10 bg-background text-center text-foreground caret-foreground [&]:[-webkit-text-fill-color:hsl(var(--foreground))] placeholder:text-muted-foreground placeholder:[-webkit-text-fill-color:hsl(var(--muted-foreground))]"
             />
             <Input
               type="number"
@@ -304,7 +304,7 @@ function ExerciseCard({
               placeholder="0"
               value={set.reps ?? ""}
               onChange={(e) => onUpdateSet(i, "reps", e.target.value)}
-              className="h-10 bg-background text-center"
+              className="h-10 bg-background text-center text-foreground caret-foreground [&]:[-webkit-text-fill-color:hsl(var(--foreground))] placeholder:text-muted-foreground placeholder:[-webkit-text-fill-color:hsl(var(--muted-foreground))]"
             />
           </div>
         ))}
