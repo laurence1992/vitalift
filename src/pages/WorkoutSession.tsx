@@ -232,11 +232,13 @@ function ExerciseCard({
 
       {/* Image */}
       {exercise.image && (
-        <img
-          src={exercise.image}
-          alt={exercise.name}
-          className="w-full h-40 rounded-lg object-cover"
-        />
+        <div className="flex items-center justify-center rounded-lg bg-muted/30 p-2">
+          <img
+            src={exercise.image}
+            alt={exercise.name}
+            className="w-full max-h-[200px] rounded-md object-contain"
+          />
+        </div>
       )}
 
       {/* Watch Demo */}
