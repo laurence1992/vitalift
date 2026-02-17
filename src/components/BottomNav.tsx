@@ -1,4 +1,4 @@
-import { Home, MessageSquare, TrendingUp, UtensilsCrossed, Heart, Settings, Users, List } from "lucide-react";
+import { Home, MessageSquare, TrendingUp, UtensilsCrossed, Settings, Users } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,7 +9,6 @@ const clientTabs = [
   { path: "/inbox", icon: MessageSquare, label: "Inbox", badge: true },
   { path: "/progress", icon: TrendingUp, label: "Progress" },
   { path: "/recipes", icon: UtensilsCrossed, label: "Recipes" },
-  { path: "/health", icon: Heart, label: "Health" },
   { path: "/settings", icon: Settings, label: "Settings" },
 ];
 
