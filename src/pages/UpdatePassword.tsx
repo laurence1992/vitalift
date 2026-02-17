@@ -19,31 +19,44 @@ export default function UpdatePassword() {
     "bg-white text-black placeholder:text-gray-500 caret-black [&]:[-webkit-text-fill-color:black]";
 
   useEffect(() => {
-    // Check hash and query params for errors or recovery tokens
     const hash = window.location.hash;
     const params = new URLSearchParams(window.location.search);
-    const hashParams = new URLSearchParams(hash.replace("#", ""));
+    const hp = new URLSearchParams(hash.replace("#", ""));
 
-    const errorCode =
-      params.get("error_code") || hashParams.get("error_code");
-    const errorDesc =
-      params.get("error_description") || hashParams.get("error_description");
+    const errorCode = params.get("error_code") || hp.get("error_code");
+    const errorDesc = params.get("error_description") || hp.get("error_description");
 
     if (errorCode === "otp_expired" || errorDesc?.includes("expired")) {
       setExpired(true);
       return;
     }
 
-    if (
-      params.get("error") ||
-      hashParams.get("error") ||
-      errorCode === "access_denied"
-    ) {
+    if (params.get("error") || hp.get("error") || errorCode === "access_denied") {
       setExpired(true);
       return;
     }
 
-    // Listen for PASSWORD_RECOVERY event from Supabase
+    // Extract tokens from hash fragment and establish session
+    const accessToken = hp.get("access_token");
+    const refreshToken = hp.get("refresh_token");
+
+    if (accessToken && refreshToken) {
+      supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      }).then(({ error }) => {
+        if (error) {
+          console.error("Failed to set session from hash:", error);
+          setExpired(true);
+        } else {
+          setReady(true);
+          window.history.replaceState(null, "", window.location.pathname);
+        }
+      });
+      return;
+    }
+
+    // Fallback: listen for PASSWORD_RECOVERY event
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event) => {
         if (event === "PASSWORD_RECOVERY") {
@@ -52,15 +65,18 @@ export default function UpdatePassword() {
       }
     );
 
-    // Also check if we already have a session (recovery link sets one)
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setReady(true);
       }
     });
 
-    // Give it a few seconds then show ready anyway (token may already be consumed)
-    const timeout = setTimeout(() => setReady(true), 2000);
+    const timeout = setTimeout(() => {
+      setReady((prev) => {
+        if (!prev) setExpired(true);
+        return prev;
+      });
+    }, 5000);
 
     return () => {
       subscription.unsubscribe();

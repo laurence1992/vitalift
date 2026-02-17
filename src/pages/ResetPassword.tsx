@@ -39,7 +39,7 @@ export default function ResetPassword() {
         <div className="text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
             <Dumbbell className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold text-foreground">VitaLift</h1>
+            <h1 className="text-3xl font-bold text-primary">VitaLift</h1>
           </div>
           <p className="text-muted-foreground text-sm">Reset your password</p>
         </div>
