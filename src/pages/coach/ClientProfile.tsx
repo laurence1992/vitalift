@@ -185,13 +185,13 @@ export default function ClientProfile() {
           {Object.entries(byExercise).map(([exId, sets]) => {
             const volume = sets.reduce((s, set) => s + (set.weight ?? 0) * (set.reps ?? 0), 0);
             return (
-              <div key={exId} className="rounded-xl border border-border bg-card p-4">
-                <p className="text-sm font-semibold mb-1">{exerciseNames[exId] || exId}</p>
-                {volume > 0 && <p className="text-xs text-muted-foreground mb-2">Volume: {volume.toLocaleString()} kg</p>}
+              <div key={exId} className="rounded-xl bg-primary text-white p-4">
+                <p className="text-sm font-semibold text-white mb-1">{exerciseNames[exId] || exId}</p>
+                {volume > 0 && <p className="text-xs text-white/70 mb-2">Volume: {volume.toLocaleString()} kg</p>}
                 <div className="space-y-1">
                   {sets.map((s, i) => (
-                    <div key={i} className="flex gap-4 rounded-lg bg-muted/50 px-3 py-1.5 text-sm">
-                      <span className="w-8 text-xs font-bold text-muted-foreground">Set {s.set_number}</span>
+                    <div key={i} className="flex gap-4 rounded-lg bg-white/10 px-3 py-1.5 text-sm text-white">
+                      <span className="w-8 text-xs font-bold text-white/80">Set {s.set_number}</span>
                       <span>{s.weight ?? "–"} kg</span>
                       <span>× {s.reps ?? "–"}</span>
                     </div>
@@ -201,9 +201,9 @@ export default function ClientProfile() {
             );
           })}
           {workout?.session_notes && (
-            <div className="rounded-xl border border-border bg-card p-4">
-              <p className="text-xs font-semibold uppercase text-muted-foreground mb-1">Notes</p>
-              <p className="text-sm whitespace-pre-wrap">{workout.session_notes}</p>
+            <div className="rounded-xl bg-primary text-white p-4">
+              <p className="text-xs font-semibold uppercase text-white/80 mb-1">Notes</p>
+              <p className="text-sm whitespace-pre-wrap text-white">{workout.session_notes}</p>
             </div>
           )}
         </div>
@@ -232,7 +232,7 @@ export default function ClientProfile() {
           </Button>
           <Button
             size="sm"
-            className={`flex-1 gap-1.5 ${client?.status === "archived" ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-destructive text-destructive-foreground hover:bg-destructive/90"}`}
+            className="flex-1 gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={handleArchiveToggle}
           >
             {client?.status === "archived" ? <RotateCcw className="h-3.5 w-3.5" /> : <Archive className="h-3.5 w-3.5" />}
@@ -241,40 +241,40 @@ export default function ClientProfile() {
         </div>
 
         {/* Assigned Program */}
-        <div className="rounded-xl border border-border bg-card p-4">
+        <div className="rounded-xl bg-primary text-white p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <Dumbbell className="h-4 w-4 text-primary" />
-              <h2 className="text-sm font-semibold">Assigned Program</h2>
+              <Dumbbell className="h-4 w-4 text-white" />
+              <h2 className="text-sm font-semibold text-white">Assigned Program</h2>
             </div>
-            <Button size="sm" className="h-7 text-xs gap-1 bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => setShowBuilder(true)}>
+            <Button size="sm" className="h-7 text-xs gap-1 bg-white text-primary hover:bg-white/90" onClick={() => setShowBuilder(true)}>
               <Edit className="h-3 w-3" />
               {program ? "Edit" : "Create"}
             </Button>
           </div>
           {program ? (
             <div>
-              <p className="text-sm font-medium">{program.name}</p>
-              <p className="text-xs text-muted-foreground">Updated {format(new Date(program.updated_at), "MMM d, yyyy")}</p>
+              <p className="text-sm font-medium text-white">{program.name}</p>
+              <p className="text-xs text-white/70">Updated {format(new Date(program.updated_at), "MMM d, yyyy")}</p>
             </div>
           ) : (
-            <p className="text-xs text-muted-foreground">No program assigned yet. Click Create to build one.</p>
+            <p className="text-xs text-white/70">No program assigned yet. Click Create to build one.</p>
           )}
         </div>
 
         {/* Weight trend */}
         {weightData.length > 1 && (
-          <div className="rounded-xl border border-border bg-card p-4">
+          <div className="rounded-xl bg-primary text-white p-4">
             <div className="flex items-center gap-2 mb-3">
-              <TrendingUp className="h-4 w-4 text-primary" />
-              <h2 className="text-sm font-semibold">Weight Trend</h2>
+              <TrendingUp className="h-4 w-4 text-white" />
+              <h2 className="text-sm font-semibold text-white">Weight Trend</h2>
             </div>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={weightData}>
-                <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" domain={["auto", "auto"]} />
+                <XAxis dataKey="date" tick={{ fontSize: 10, fill: "white" }} stroke="rgba(255,255,255,0.5)" />
+                <YAxis tick={{ fontSize: 10, fill: "white" }} stroke="rgba(255,255,255,0.5)" domain={["auto", "auto"]} />
                 <Tooltip />
-                <Line type="monotone" dataKey="weight" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="weight" stroke="white" strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -292,16 +292,16 @@ export default function ClientProfile() {
                 <button
                   key={w.id}
                   onClick={() => viewWorkoutDetail(w.id)}
-                  className="flex w-full items-center justify-between rounded-lg border border-border bg-card px-4 py-3 text-left"
+                  className="flex w-full items-center justify-between rounded-xl bg-primary text-white px-4 py-3 text-left hover:bg-primary/90 active:scale-[0.98] transition-all"
                 >
                   <div>
-                    <p className="text-sm font-medium">{w.day_id}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-sm font-semibold text-white">{w.day_id}</p>
+                    <p className="text-xs text-white/70">
                       {format(new Date(w.date), "MMM d, yyyy")}
                       {w.duration_seconds ? ` · ${formatDuration(w.duration_seconds)}` : ""}
                     </p>
                   </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  <ChevronRight className="h-4 w-4 text-white/70" />
                 </button>
               );
             })}
@@ -316,10 +316,10 @@ export default function ClientProfile() {
           {progress.length === 0 && <p className="text-sm text-muted-foreground">No progress entries yet.</p>}
           <div className="space-y-2">
             {progress.map((p) => (
-              <div key={p.id} className="rounded-lg border border-border bg-card px-4 py-3">
-                <p className="text-sm font-medium">{format(new Date(p.date), "MMM d, yyyy")}</p>
-                {p.bodyweight && <p className="text-xs text-muted-foreground">{p.bodyweight} kg</p>}
-                {p.notes && <p className="text-xs text-muted-foreground mt-1">{p.notes}</p>}
+              <div key={p.id} className="rounded-xl bg-primary text-white px-4 py-3">
+                <p className="text-sm font-semibold text-white">{format(new Date(p.date), "MMM d, yyyy")}</p>
+                {p.bodyweight && <p className="text-xs text-white/70">{p.bodyweight} kg</p>}
+                {p.notes && <p className="text-xs text-white/70 mt-1">{p.notes}</p>}
               </div>
             ))}
           </div>

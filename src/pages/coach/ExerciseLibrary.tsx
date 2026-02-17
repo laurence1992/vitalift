@@ -262,7 +262,7 @@ export default function ExerciseLibrary({
             {!selectable && (
               <Button
                 size="icon"
-                className={`h-7 w-7 shrink-0 ${ex.archived_at ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-destructive text-destructive-foreground hover:bg-destructive/90"}`}
+                className="h-7 w-7 shrink-0 bg-white/20 text-white hover:bg-white/30"
                 onClick={(e) => { e.stopPropagation(); toggleArchive(ex); }}
               >
                 {ex.archived_at ? <RotateCcw className="h-3.5 w-3.5" /> : <Archive className="h-3.5 w-3.5" />}

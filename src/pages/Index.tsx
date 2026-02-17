@@ -334,7 +334,7 @@ export default function Index() {
                   <Camera className="h-4 w-4 text-primary" />
                   <span className="text-[11px] font-medium text-muted-foreground">Progress Photos</span>
                 </div>
-                <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => setPhotoOpen(true)}>
+                <Button size="sm" className="h-7 px-2 text-xs bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => setPhotoOpen(true)}>
                   <Plus className="h-3 w-3 mr-1" /> Add
                 </Button>
               </div>

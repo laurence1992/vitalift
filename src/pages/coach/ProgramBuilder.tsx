@@ -386,7 +386,7 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
 
       {/* Days */}
       {days.map((day, dayIdx) => (
-        <div key={dayIdx} className="rounded-xl border border-border bg-card p-3 space-y-3">
+        <div key={dayIdx} className="rounded-xl bg-primary p-3 space-y-3">
           <div className="flex items-center gap-2">
             <Input
               value={day.label}
@@ -411,8 +411,7 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
             />
             <Button
               size="icon"
-              variant="ghost"
-              className="h-8 w-8 shrink-0 text-destructive"
+              className="h-8 w-8 shrink-0 bg-primary text-white hover:bg-primary/80"
               onClick={() => setDeleteDayIdx(dayIdx)}
               title="Delete day"
             >
@@ -422,19 +421,19 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
 
           {/* Exercises in this day */}
           {day.exercises.map((ex, exIdx) => (
-            <div key={exIdx} className="rounded-lg border border-border/50 bg-background p-3 space-y-2">
+            <div key={exIdx} className="rounded-lg bg-primary/80 p-3 space-y-2">
               <div className="flex items-center gap-2">
-                <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
-                <p className="text-sm font-medium flex-1 truncate">{ex.exercise_name}</p>
-                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => moveExercise(dayIdx, exIdx, -1)}><ChevronUp className="h-3 w-3" /></Button>
-                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => moveExercise(dayIdx, exIdx, 1)}><ChevronDown className="h-3 w-3" /></Button>
-                <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive" onClick={() => removeExercise(dayIdx, exIdx)}><Trash2 className="h-3 w-3" /></Button>
+                <GripVertical className="h-4 w-4 text-white/70 shrink-0" />
+                <p className="text-sm font-semibold text-white flex-1 truncate">{ex.exercise_name}</p>
+                <Button size="icon" className="h-6 w-6 bg-transparent text-white hover:bg-white/10" onClick={() => moveExercise(dayIdx, exIdx, -1)}><ChevronUp className="h-3 w-3" /></Button>
+                <Button size="icon" className="h-6 w-6 bg-transparent text-white hover:bg-white/10" onClick={() => moveExercise(dayIdx, exIdx, 1)}><ChevronDown className="h-3 w-3" /></Button>
+                <Button size="icon" className="h-6 w-6 bg-transparent text-white hover:bg-white/10" onClick={() => removeExercise(dayIdx, exIdx)}><Trash2 className="h-3 w-3" /></Button>
               </div>
 
               {/* Exercise-level targets */}
               <div className="grid grid-cols-4 gap-2">
                 <div>
-                  <label className="text-[10px] text-muted-foreground">Sets</label>
+                  <label className="text-[10px] text-white/80">Sets</label>
                   <Input
                     type="number"
                     value={ex.target_sets}
@@ -444,7 +443,7 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-muted-foreground">Reps</label>
+                  <label className="text-[10px] text-white/80">Reps</label>
                   <Input
                     value={ex.target_reps}
                     onChange={(e) => updateExercise(dayIdx, exIdx, "target_reps", e.target.value)}
@@ -453,7 +452,7 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-muted-foreground">Weight</label>
+                  <label className="text-[10px] text-white/80">Weight</label>
                   <Input
                     value={ex.target_weight}
                     onChange={(e) => updateExercise(dayIdx, exIdx, "target_weight", e.target.value)}
@@ -463,7 +462,7 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-muted-foreground">Rest (s)</label>
+                  <label className="text-[10px] text-white/80">Rest (s)</label>
                   <Input
                     value={ex.rest_seconds}
                     onChange={(e) => updateExercise(dayIdx, exIdx, "rest_seconds", e.target.value)}
@@ -483,10 +482,10 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
 
               {/* Per-set details */}
               <div className="space-y-1.5">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Per-Set Details</p>
+                <p className="text-[10px] font-semibold text-white/80 uppercase tracking-wide">Per-Set Details</p>
                 {ex.sets.map((s, setIdx) => (
                   <div key={setIdx} className="grid grid-cols-[30px_1fr_1fr_1fr_2fr] gap-1.5 items-center">
-                    <span className="text-[10px] font-bold text-muted-foreground text-center">{s.set_index}</span>
+                    <span className="text-[10px] font-bold text-white/80 text-center">{s.set_index}</span>
                     <Input
                       placeholder="Reps"
                       value={s.target_reps}
@@ -560,7 +559,7 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deleteDayIdx !== null && deleteDay(deleteDayIdx)}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               Delete
             </AlertDialogAction>
