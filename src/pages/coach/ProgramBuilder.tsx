@@ -531,7 +531,7 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
         </div>
       ))}
 
-      <Button variant="outline" onClick={addDay} className="w-full gap-2 border-primary/30 text-primary hover:bg-primary/10">
+      <Button onClick={addDay} className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
         <Plus className="h-4 w-4" /> Add Day
       </Button>
 

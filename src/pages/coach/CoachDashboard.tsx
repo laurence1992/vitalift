@@ -145,8 +145,7 @@ export default function CoachDashboard() {
             <div className="flex items-center gap-1.5 ml-2 shrink-0">
               <Button
                 size="icon"
-                variant="ghost"
-                className="h-8 w-8"
+                className="h-8 w-8 bg-primary text-primary-foreground hover:bg-primary/90"
                 onClick={(e) => { e.stopPropagation(); handleMessage(c.id); }}
                 title="Message"
               >
@@ -155,8 +154,7 @@ export default function CoachDashboard() {
               {showArchived ? (
                 <Button
                   size="icon"
-                  variant="ghost"
-                  className="h-8 w-8 text-green-500"
+                  className="h-8 w-8 bg-primary text-primary-foreground hover:bg-primary/90"
                   onClick={(e) => { e.stopPropagation(); setRestoreTarget(c); }}
                   title="Restore"
                 >
@@ -165,8 +163,7 @@ export default function CoachDashboard() {
               ) : (
                 <Button
                   size="icon"
-                  variant="ghost"
-                  className="h-8 w-8 text-destructive"
+                  className="h-8 w-8 bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   onClick={(e) => { e.stopPropagation(); setArchiveTarget(c); }}
                   title="Archive"
                 >

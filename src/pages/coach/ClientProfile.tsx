@@ -232,8 +232,7 @@ export default function ClientProfile() {
           </Button>
           <Button
             size="sm"
-            variant="outline"
-            className={`flex-1 gap-1.5 ${client?.status === "archived" ? "text-green-600 border-green-300 hover:bg-green-50" : "text-destructive border-destructive/30 hover:bg-destructive/10"}`}
+            className={`flex-1 gap-1.5 ${client?.status === "archived" ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-destructive text-destructive-foreground hover:bg-destructive/90"}`}
             onClick={handleArchiveToggle}
           >
             {client?.status === "archived" ? <RotateCcw className="h-3.5 w-3.5" /> : <Archive className="h-3.5 w-3.5" />}
