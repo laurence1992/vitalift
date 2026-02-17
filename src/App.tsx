@@ -21,6 +21,8 @@ import Recipes from "./pages/Recipes";
 import Settings from "./pages/Settings";
 import CoachDashboard from "./pages/coach/CoachDashboard";
 import ClientProfile from "./pages/coach/ClientProfile";
+import CoachExerciseLibraryPage from "./pages/coach/CoachExerciseLibraryPage";
+import ProgramWorkoutSession from "./pages/ProgramWorkoutSession";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -80,7 +82,10 @@ function AppRoutes() {
 
         {/* Coach routes */}
         <Route path="/coach/client/:clientId" element={<ClientProfile />} />
+        <Route path="/coach/exercises" element={<CoachExerciseLibraryPage />} />
 
+        {/* Program-based workout */}
+        <Route path="/workout/program/:dayId" element={<ProgramWorkoutSession />} />
 
         <Route path="/auth" element={<Navigate to="/" replace />} />
         <Route path="*" element={<NotFound />} />
