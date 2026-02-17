@@ -36,12 +36,21 @@ function AppRoutes() {
     );
   }
 
+  // Always render /update-password regardless of auth state
+  const pathname = window.location.pathname;
+  if (pathname === "/update-password") {
+    return (
+      <Routes>
+        <Route path="/update-password" element={<UpdatePassword />} />
+      </Routes>
+    );
+  }
+
   if (!user) {
     return (
       <Routes>
         <Route path="/auth" element={<Auth />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/update-password" element={<UpdatePassword />} />
         <Route path="*" element={<Navigate to="/auth" replace />} />
       </Routes>
     );
@@ -72,7 +81,7 @@ function AppRoutes() {
         {/* Coach routes */}
         <Route path="/coach/client/:clientId" element={<ClientProfile />} />
 
-        <Route path="/update-password" element={<UpdatePassword />} />
+
         <Route path="/auth" element={<Navigate to="/" replace />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
