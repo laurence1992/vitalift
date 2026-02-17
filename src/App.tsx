@@ -9,14 +9,11 @@ import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import UpdatePassword from "./pages/UpdatePassword";
 import Index from "./pages/Index";
-import WorkoutSession from "./pages/WorkoutSession";
 import Exercises from "./pages/Exercises";
 import History from "./pages/History";
 import WorkoutSummary from "./pages/WorkoutSummary";
 import Inbox from "./pages/Inbox";
 import Conversation from "./pages/Conversation";
-import Progress from "./pages/Progress";
-import Health from "./pages/Health";
 import Recipes from "./pages/Recipes";
 import Settings from "./pages/Settings";
 import CoachDashboard from "./pages/coach/CoachDashboard";
@@ -38,7 +35,6 @@ function AppRoutes() {
     );
   }
 
-  // Always render /update-password regardless of auth state
   const pathname = window.location.pathname;
   if (pathname === "/update-password") {
     return (
@@ -66,19 +62,16 @@ function AppRoutes() {
         {/* Home - role dependent */}
         <Route path="/" element={isCoach ? <CoachDashboard /> : <Index />} />
 
-        {/* Client workout routes */}
-        <Route path="/workout/:dayId" element={<WorkoutSession />} />
-        <Route path="/exercises" element={<Exercises />} />
-        <Route path="/history" element={<History />} />
+        {/* Client routes */}
+        <Route path="/workouts" element={<History />} />
         <Route path="/history/:workoutId" element={<WorkoutSummary />} />
+        <Route path="/exercises" element={<Exercises />} />
 
         {/* Shared routes */}
         <Route path="/inbox" element={<Inbox />} />
         <Route path="/inbox/:conversationId" element={<Conversation />} />
-        <Route path="/progress" element={<Progress />} />
         <Route path="/recipes" element={<Recipes />} />
         <Route path="/settings" element={<Settings />} />
-        <Route path="/health" element={<Health />} />
 
         {/* Coach routes */}
         <Route path="/coach/client/:clientId" element={<ClientProfile />} />

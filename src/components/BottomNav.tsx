@@ -1,4 +1,4 @@
-import { Home, MessageSquare, TrendingUp, UtensilsCrossed, Settings, Users, Dumbbell } from "lucide-react";
+import { Home, MessageSquare, Settings, Users, Dumbbell, ClipboardList } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -6,9 +6,8 @@ import { useUnreadCount } from "@/hooks/useUnreadCount";
 
 const clientTabs = [
   { path: "/", icon: Home, label: "Home" },
+  { path: "/workouts", icon: ClipboardList, label: "Workouts" },
   { path: "/inbox", icon: MessageSquare, label: "Inbox", badge: true },
-  { path: "/progress", icon: TrendingUp, label: "Progress" },
-  { path: "/recipes", icon: UtensilsCrossed, label: "Recipes" },
   { path: "/settings", icon: Settings, label: "Settings" },
 ];
 
@@ -16,7 +15,6 @@ const coachTabs = [
   { path: "/", icon: Users, label: "Clients" },
   { path: "/coach/exercises", icon: Dumbbell, label: "Exercises" },
   { path: "/inbox", icon: MessageSquare, label: "Inbox", badge: true },
-  { path: "/recipes", icon: UtensilsCrossed, label: "Recipes" },
   { path: "/settings", icon: Settings, label: "Settings" },
 ];
 
@@ -26,10 +24,11 @@ export default function BottomNav() {
   const { profile } = useAuth();
   const unreadCount = useUnreadCount();
 
-  // Hide nav during active workout or conversation or on auth page
+  // Hide nav during active workout, conversation, or on auth page
   if (
     location.pathname.startsWith("/workout/") ||
     location.pathname.startsWith("/inbox/") ||
+    location.pathname.startsWith("/coach/client/") ||
     location.pathname === "/auth"
   ) return null;
 
