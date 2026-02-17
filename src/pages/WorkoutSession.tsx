@@ -14,6 +14,9 @@ import {
   getPersonalBest,
   getLastWorkoutForDay,
 } from "@/lib/storage";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import ExerciseDetailModal from "@/components/ExerciseDetailModal";
 
 function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -28,12 +31,15 @@ function parseTargetSets(ts: number | string): number {
 export default function WorkoutSession() {
   const { dayId } = useParams<{ dayId: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const day = workoutDays.find((d) => d.id === dayId);
 
   const [workoutId] = useState(() => generateId());
+  const [startTime] = useState(() => new Date().toISOString());
   const [exerciseLogs, setExerciseLogs] = useState<Record<string, SetLog[]>>({});
   const [sessionNotes, setSessionNotes] = useState("");
   const [repeatedToast, setRepeatedToast] = useState<string | null>(null);
+  const [selectedExercise, setSelectedExercise] = useState<DayExercise | null>(null);
 
   useEffect(() => {
     if (!day) return;
@@ -107,11 +113,14 @@ export default function WorkoutSession() {
     setTimeout(() => setRepeatedToast(null), 2500);
   };
 
-  const finishWorkout = () => {
+  const finishWorkout = async () => {
     const exercises: ExerciseLog[] = day.exercises.map((ex, exIdx) => ({
       exerciseId: ex.id,
       sets: exerciseLogs[`${ex.id}-${exIdx}`] || [],
     }));
+
+    const endTime = new Date().toISOString();
+    const durationSeconds = Math.round((new Date(endTime).getTime() - new Date(startTime).getTime()) / 1000);
 
     const workout: WorkoutLog = {
       id: workoutId,
@@ -121,6 +130,36 @@ export default function WorkoutSession() {
       sessionNotes,
     };
     saveWorkout(workout);
+
+    // Also persist to database
+    if (user) {
+      const { data: dbWorkout } = await supabase.from("workouts").insert({
+        client_id: user.id,
+        day_id: day.id,
+        start_time: startTime,
+        end_time: endTime,
+        duration_seconds: durationSeconds,
+        session_notes: sessionNotes,
+      }).select().single();
+
+      if (dbWorkout) {
+        const setRows = exercises.flatMap((ex) =>
+          ex.sets
+            .filter((s) => s.weight != null || s.reps != null)
+            .map((s) => ({
+              workout_id: dbWorkout.id,
+              exercise_id: ex.exerciseId,
+              set_number: s.setNumber,
+              weight: s.weight,
+              reps: s.reps,
+            }))
+        );
+        if (setRows.length > 0) {
+          await supabase.from("workout_sets").insert(setRows);
+        }
+      }
+    }
+
     navigate(`/history/${workout.id}`);
   };
 
@@ -183,11 +222,17 @@ export default function WorkoutSession() {
                 pb={pb}
                 exerciseVolume={exVolume}
                 onUpdateSet={(setIdx, field, value) => updateSet(exKey, setIdx, field, value)}
+                onExerciseClick={() => setSelectedExercise(ex)}
               />
             </div>
           );
         })}
 
+        <ExerciseDetailModal
+          exercise={selectedExercise}
+          open={!!selectedExercise}
+          onOpenChange={(open) => { if (!open) setSelectedExercise(null); }}
+        />
         {/* Session notes */}
         <div className="rounded-xl border border-border bg-card p-4">
           <label className="mb-2 block text-sm font-medium">Session Notes</label>
@@ -224,17 +269,21 @@ function ExerciseCard({
   pb,
   exerciseVolume,
   onUpdateSet,
+  onExerciseClick,
 }: {
   exercise: DayExercise;
   sets: SetLog[];
   pb: { weight: number; reps: number } | null;
   exerciseVolume: number;
   onUpdateSet: (setIdx: number, field: "weight" | "reps", value: string) => void;
+  onExerciseClick: () => void;
 }) {
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden p-4 space-y-3">
-      {/* Exercise name */}
-      <h3 className="text-lg font-bold text-foreground">{exercise.name || "Unnamed Exercise"}</h3>
+      {/* Exercise name - clickable for detail */}
+      <button onClick={onExerciseClick} className="text-left">
+        <h3 className="text-lg font-bold text-foreground">{exercise.name || "Unnamed Exercise"}</h3>
+      </button>
       {exercise.notes && (
         <p className="text-xs text-primary/80">{exercise.notes}</p>
       )}
