@@ -72,6 +72,7 @@ function AppRoutes() {
         {/* Coach routes */}
         <Route path="/coach/client/:clientId" element={<ClientProfile />} />
 
+        <Route path="/update-password" element={<UpdatePassword />} />
         <Route path="/auth" element={<Navigate to="/" replace />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
