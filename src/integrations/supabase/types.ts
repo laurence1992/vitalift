@@ -14,16 +14,394 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      conversations: {
+        Row: {
+          client_id: string
+          coach_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          client_id: string
+          coach_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          client_id?: string
+          coach_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      health_entries: {
+        Row: {
+          bodyweight: number | null
+          caloric_intake: number | null
+          calories_burned: number | null
+          client_id: string
+          created_at: string
+          date: string
+          id: string
+          resting_hr: number | null
+          sleep_hours: number | null
+          steps: number | null
+        }
+        Insert: {
+          bodyweight?: number | null
+          caloric_intake?: number | null
+          calories_burned?: number | null
+          client_id: string
+          created_at?: string
+          date?: string
+          id?: string
+          resting_hr?: number | null
+          sleep_hours?: number | null
+          steps?: number | null
+        }
+        Update: {
+          bodyweight?: number | null
+          caloric_intake?: number | null
+          calories_burned?: number | null
+          client_id?: string
+          created_at?: string
+          date?: string
+          id?: string
+          resting_hr?: number | null
+          sleep_hours?: number | null
+          steps?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_entries_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          body: string | null
+          conversation_id: string
+          created_at: string
+          id: string
+          media_type: string
+          media_url: string | null
+          read_at: string | null
+          sender_user_id: string
+        }
+        Insert: {
+          body?: string | null
+          conversation_id: string
+          created_at?: string
+          id?: string
+          media_type?: string
+          media_url?: string | null
+          read_at?: string | null
+          sender_user_id: string
+        }
+        Update: {
+          body?: string | null
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          media_type?: string
+          media_url?: string | null
+          read_at?: string | null
+          sender_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_user_id_fkey"
+            columns: ["sender_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          coach_id: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Insert: {
+          coach_id?: string | null
+          created_at?: string
+          email?: string
+          id: string
+          name?: string
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Update: {
+          coach_id?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      progress_entries: {
+        Row: {
+          bodyweight: number | null
+          client_id: string
+          coach_id: string | null
+          created_at: string
+          date: string
+          id: string
+          notes: string | null
+        }
+        Insert: {
+          bodyweight?: number | null
+          client_id: string
+          coach_id?: string | null
+          created_at?: string
+          date?: string
+          id?: string
+          notes?: string | null
+        }
+        Update: {
+          bodyweight?: number | null
+          client_id?: string
+          coach_id?: string | null
+          created_at?: string
+          date?: string
+          id?: string
+          notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "progress_entries_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "progress_entries_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      progress_photos: {
+        Row: {
+          angle: string
+          created_at: string
+          id: string
+          photo_url: string
+          progress_entry_id: string
+        }
+        Insert: {
+          angle?: string
+          created_at?: string
+          id?: string
+          photo_url: string
+          progress_entry_id: string
+        }
+        Update: {
+          angle?: string
+          created_at?: string
+          id?: string
+          photo_url?: string
+          progress_entry_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "progress_photos_progress_entry_id_fkey"
+            columns: ["progress_entry_id"]
+            isOneToOne: false
+            referencedRelation: "progress_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recipes: {
+        Row: {
+          calories: number | null
+          carbs: number | null
+          coach_id: string
+          created_at: string
+          fats: number | null
+          id: string
+          image_url: string | null
+          ingredients: string | null
+          instructions: string | null
+          protein: number | null
+          title: string
+        }
+        Insert: {
+          calories?: number | null
+          carbs?: number | null
+          coach_id: string
+          created_at?: string
+          fats?: number | null
+          id?: string
+          image_url?: string | null
+          ingredients?: string | null
+          instructions?: string | null
+          protein?: number | null
+          title: string
+        }
+        Update: {
+          calories?: number | null
+          carbs?: number | null
+          coach_id?: string
+          created_at?: string
+          fats?: number | null
+          id?: string
+          image_url?: string | null
+          ingredients?: string | null
+          instructions?: string | null
+          protein?: number | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipes_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workout_sets: {
+        Row: {
+          created_at: string
+          exercise_id: string
+          id: string
+          reps: number | null
+          set_number: number
+          weight: number | null
+          workout_id: string
+        }
+        Insert: {
+          created_at?: string
+          exercise_id: string
+          id?: string
+          reps?: number | null
+          set_number: number
+          weight?: number | null
+          workout_id: string
+        }
+        Update: {
+          created_at?: string
+          exercise_id?: string
+          id?: string
+          reps?: number | null
+          set_number?: number
+          weight?: number | null
+          workout_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_sets_workout_id_fkey"
+            columns: ["workout_id"]
+            isOneToOne: false
+            referencedRelation: "workouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workouts: {
+        Row: {
+          client_id: string
+          created_at: string
+          date: string
+          day_id: string
+          duration_seconds: number | null
+          end_time: string | null
+          id: string
+          session_notes: string | null
+          start_time: string | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          date?: string
+          day_id: string
+          duration_seconds?: number | null
+          end_time?: string | null
+          id?: string
+          session_notes?: string | null
+          start_time?: string | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          date?: string
+          day_id?: string
+          duration_seconds?: number | null
+          end_time?: string | null
+          id?: string
+          session_notes?: string | null
+          start_time?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workouts_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_coach_id: { Args: { _user_id: string }; Returns: string }
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "coach" | "client"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +528,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["coach", "client"],
+    },
   },
 } as const
