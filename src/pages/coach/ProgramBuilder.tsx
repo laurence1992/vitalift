@@ -351,13 +351,15 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
         placeholder="Program Name *"
         value={name}
         onChange={(e) => setName(e.target.value)}
-        className="font-semibold"
+        className="font-semibold bg-white text-black caret-black placeholder:text-gray-400"
+        style={{ WebkitTextFillColor: "#000" }}
       />
       <Textarea
         placeholder="Description (optional)"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-        className="min-h-[60px]"
+        className="min-h-[60px] bg-white text-black caret-black placeholder:text-gray-400"
+        style={{ WebkitTextFillColor: "#000" }}
       />
 
       {/* Days */}
@@ -371,7 +373,8 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
                 updated[dayIdx] = { ...updated[dayIdx], label: e.target.value };
                 setDays(updated);
               }}
-              className="h-8 text-sm font-semibold flex-1"
+              className="h-8 text-sm font-semibold flex-1 bg-white text-black caret-black placeholder:text-gray-400"
+              style={{ WebkitTextFillColor: "#000" }}
             />
             <Input
               placeholder="Day note"
@@ -381,7 +384,8 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
                 updated[dayIdx] = { ...updated[dayIdx], day_note: e.target.value };
                 setDays(updated);
               }}
-              className="h-8 text-xs flex-1"
+              className="h-8 text-xs flex-1 bg-white text-black caret-black placeholder:text-gray-400"
+              style={{ WebkitTextFillColor: "#000" }}
             />
           </div>
 
@@ -404,7 +408,8 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
                     type="number"
                     value={ex.target_sets}
                     onChange={(e) => updateExercise(dayIdx, exIdx, "target_sets", Number(e.target.value) || 1)}
-                    className="h-7 text-xs text-center"
+                    className="h-7 text-xs text-center bg-white text-black caret-black placeholder:text-gray-400"
+                    style={{ WebkitTextFillColor: "#000" }}
                   />
                 </div>
                 <div>
@@ -412,7 +417,8 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
                   <Input
                     value={ex.target_reps}
                     onChange={(e) => updateExercise(dayIdx, exIdx, "target_reps", e.target.value)}
-                    className="h-7 text-xs text-center"
+                    className="h-7 text-xs text-center bg-white text-black caret-black placeholder:text-gray-400"
+                    style={{ WebkitTextFillColor: "#000" }}
                   />
                 </div>
                 <div>
@@ -420,8 +426,9 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
                   <Input
                     value={ex.target_weight}
                     onChange={(e) => updateExercise(dayIdx, exIdx, "target_weight", e.target.value)}
-                    className="h-7 text-xs text-center"
+                    className="h-7 text-xs text-center bg-white text-black caret-black placeholder:text-gray-400"
                     placeholder="kg"
+                    style={{ WebkitTextFillColor: "#000" }}
                   />
                 </div>
                 <div>
@@ -429,7 +436,8 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
                   <Input
                     value={ex.rest_seconds}
                     onChange={(e) => updateExercise(dayIdx, exIdx, "rest_seconds", e.target.value)}
-                    className="h-7 text-xs text-center"
+                    className="h-7 text-xs text-center bg-white text-black caret-black placeholder:text-gray-400"
+                    style={{ WebkitTextFillColor: "#000" }}
                   />
                 </div>
               </div>
@@ -438,7 +446,8 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
                 placeholder="Coach notes for exercise"
                 value={ex.coach_notes}
                 onChange={(e) => updateExercise(dayIdx, exIdx, "coach_notes", e.target.value)}
-                className="h-7 text-xs"
+                className="h-7 text-xs bg-white text-black caret-black placeholder:text-gray-400"
+                style={{ WebkitTextFillColor: "#000" }}
               />
 
               {/* Per-set details */}
@@ -451,25 +460,29 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
                       placeholder="Reps"
                       value={s.target_reps}
                       onChange={(e) => updateSet(dayIdx, exIdx, setIdx, "target_reps", e.target.value)}
-                      className="h-6 text-[10px] text-center"
+                      className="h-6 text-[10px] text-center bg-white text-black caret-black placeholder:text-gray-400"
+                      style={{ WebkitTextFillColor: "#000" }}
                     />
                     <Input
                       placeholder="kg"
                       value={s.target_weight}
                       onChange={(e) => updateSet(dayIdx, exIdx, setIdx, "target_weight", e.target.value)}
-                      className="h-6 text-[10px] text-center"
+                      className="h-6 text-[10px] text-center bg-white text-black caret-black placeholder:text-gray-400"
+                      style={{ WebkitTextFillColor: "#000" }}
                     />
                     <Input
                       placeholder="Rest"
                       value={s.rest_seconds}
                       onChange={(e) => updateSet(dayIdx, exIdx, setIdx, "rest_seconds", e.target.value)}
-                      className="h-6 text-[10px] text-center"
+                      className="h-6 text-[10px] text-center bg-white text-black caret-black placeholder:text-gray-400"
+                      style={{ WebkitTextFillColor: "#000" }}
                     />
                     <Input
                       placeholder="Coach note for this set"
                       value={s.coach_note}
                       onChange={(e) => updateSet(dayIdx, exIdx, setIdx, "coach_note", e.target.value)}
-                      className="h-6 text-[10px]"
+                      className="h-6 text-[10px] bg-white text-black caret-black placeholder:text-gray-400"
+                      style={{ WebkitTextFillColor: "#000" }}
                     />
                   </div>
                 ))}
