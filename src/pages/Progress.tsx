@@ -8,6 +8,7 @@ import { format, subDays } from "date-fns";
 import { LineChart, Line, ResponsiveContainer } from "recharts";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
+import { useSignedUrl } from "@/hooks/useSignedUrl";
 
 type HealthEntry = {
   id: string;
@@ -38,6 +39,14 @@ const TILES = [
   { key: "resting_hr", label: "Resting HR", icon: HeartPulse, unit: "bpm", field: "resting_hr" as const },
   { key: "blood_pressure", label: "Blood Pressure", icon: Activity, unit: "mmHg", field: "blood_pressure_systolic" as const },
 ] as const;
+
+function ProgressPhotoThumb({ photoUrl }: { photoUrl: string }) {
+  const signedUrl = useSignedUrl("progress-photos", photoUrl);
+  if (!signedUrl) return <div className="rounded-lg aspect-square bg-muted animate-pulse" />;
+  return (
+    <img src={signedUrl} alt="Progress" className="rounded-lg aspect-square object-cover w-full" />
+  );
+}
 
 export default function Progress() {
   const { user } = useAuth();
@@ -145,10 +154,9 @@ export default function Progress() {
       for (const file of photoFiles) {
         const path = `${user.id}/${Date.now()}-${file.name}`;
         await supabase.storage.from("progress-photos").upload(path, file);
-        const { data: { publicUrl } } = supabase.storage.from("progress-photos").getPublicUrl(path);
         await supabase.from("progress_photos").insert({
           progress_entry_id: entryId,
-          photo_url: publicUrl,
+          photo_url: path,
           angle: "other",
         });
       }
@@ -264,12 +272,7 @@ export default function Progress() {
             ) : (
               <div className="grid grid-cols-4 gap-2">
                 {photos.slice(0, 8).map((p) => (
-                  <img
-                    key={p.id}
-                    src={p.photo_url}
-                    alt="Progress"
-                    className="rounded-lg aspect-square object-cover w-full"
-                  />
+                  <ProgressPhotoThumb key={p.id} photoUrl={p.photo_url} />
                 ))}
               </div>
             )}

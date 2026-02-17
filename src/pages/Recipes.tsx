@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { UtensilsCrossed, Plus, Edit2, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useSignedUrl } from "@/hooks/useSignedUrl";
 
 type Recipe = {
   id: string;
@@ -21,6 +22,51 @@ type Recipe = {
 };
 
 const emptyForm = { title: "", calories: "", protein: "", carbs: "", fats: "", ingredients: "", instructions: "", image_url: "" };
+
+function RecipeCard({ recipe: r, isCoach, onEdit, onDelete }: { recipe: Recipe; isCoach: boolean; onEdit: (r: Recipe) => void; onDelete: (id: string) => void }) {
+  const signedUrl = useSignedUrl("recipe-images", r.image_url);
+
+  return (
+    <div className="rounded-xl border border-border bg-card overflow-hidden">
+      {signedUrl && (
+        <img src={signedUrl} alt={r.title} className="w-full h-40 object-cover" />
+      )}
+      <div className="p-4 space-y-2">
+        <div className="flex items-start justify-between">
+          <h3 className="text-base font-bold">{r.title}</h3>
+          {isCoach && (
+            <div className="flex gap-1">
+              <button onClick={() => onEdit(r)} className="p-1 text-muted-foreground hover:text-foreground">
+                <Edit2 className="h-4 w-4" />
+              </button>
+              <button onClick={() => onDelete(r.id)} className="p-1 text-muted-foreground hover:text-destructive">
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+        </div>
+        <div className="flex gap-3 text-xs text-muted-foreground">
+          {r.calories != null && <span>{r.calories} cal</span>}
+          {r.protein != null && <span>{r.protein}g P</span>}
+          {r.carbs != null && <span>{r.carbs}g C</span>}
+          {r.fats != null && <span>{r.fats}g F</span>}
+        </div>
+        {r.ingredients && (
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground mb-1">Ingredients</p>
+            <p className="text-sm whitespace-pre-line">{r.ingredients}</p>
+          </div>
+        )}
+        {r.instructions && (
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground mb-1">Instructions</p>
+            <p className="text-sm whitespace-pre-line">{r.instructions}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function Recipes() {
   const { user, profile } = useAuth();
@@ -71,8 +117,7 @@ export default function Recipes() {
     if (imageFile) {
       const path = `${user.id}/${Date.now()}-${imageFile.name}`;
       await supabase.storage.from("recipe-images").upload(path, imageFile);
-      const { data: { publicUrl } } = supabase.storage.from("recipe-images").getPublicUrl(path);
-      imageUrl = publicUrl;
+      imageUrl = path;
     }
 
     const payload = {
@@ -153,44 +198,7 @@ export default function Recipes() {
 
         <div className="space-y-3">
           {recipes.map((r) => (
-            <div key={r.id} className="rounded-xl border border-border bg-card overflow-hidden">
-              {r.image_url && (
-                <img src={r.image_url} alt={r.title} className="w-full h-40 object-cover" />
-              )}
-              <div className="p-4 space-y-2">
-                <div className="flex items-start justify-between">
-                  <h3 className="text-base font-bold">{r.title}</h3>
-                  {isCoach && (
-                    <div className="flex gap-1">
-                      <button onClick={() => openEdit(r)} className="p-1 text-muted-foreground hover:text-foreground">
-                        <Edit2 className="h-4 w-4" />
-                      </button>
-                      <button onClick={() => handleDelete(r.id)} className="p-1 text-muted-foreground hover:text-destructive">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  )}
-                </div>
-                <div className="flex gap-3 text-xs text-muted-foreground">
-                  {r.calories != null && <span>{r.calories} cal</span>}
-                  {r.protein != null && <span>{r.protein}g P</span>}
-                  {r.carbs != null && <span>{r.carbs}g C</span>}
-                  {r.fats != null && <span>{r.fats}g F</span>}
-                </div>
-                {r.ingredients && (
-                  <div>
-                    <p className="text-xs font-semibold text-muted-foreground mb-1">Ingredients</p>
-                    <p className="text-sm whitespace-pre-line">{r.ingredients}</p>
-                  </div>
-                )}
-                {r.instructions && (
-                  <div>
-                    <p className="text-xs font-semibold text-muted-foreground mb-1">Instructions</p>
-                    <p className="text-sm whitespace-pre-line">{r.instructions}</p>
-                  </div>
-                )}
-              </div>
-            </div>
+           <RecipeCard key={r.id} recipe={r} isCoach={isCoach} onEdit={openEdit} onDelete={handleDelete} />
           ))}
         </div>
       </div>

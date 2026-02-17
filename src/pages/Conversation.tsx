@@ -6,6 +6,7 @@ import { ArrowLeft, Send, Image, Video } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
+import { useSignedUrl } from "@/hooks/useSignedUrl";
 
 type Message = {
   id: string;
@@ -17,6 +18,46 @@ type Message = {
   created_at: string;
   read_at: string | null;
 };
+
+function MessageBubble({ msg, isMine, onEnlarge }: { msg: Message; isMine: boolean; onEnlarge: (url: string) => void }) {
+  const signedUrl = useSignedUrl("media", msg.media_url);
+
+  return (
+    <div className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
+      <div className={`max-w-[75%] rounded-xl px-3 py-2 ${isMine ? "bg-primary text-primary-foreground" : "bg-card border border-border"}`}>
+        {msg.media_type === "image" && signedUrl && (
+          <img
+            src={signedUrl}
+            alt="Photo"
+            className="rounded-lg max-h-[200px] cursor-pointer"
+            onClick={() => onEnlarge(msg.media_url!)}
+          />
+        )}
+        {msg.media_type === "video" && signedUrl && (
+          <video src={signedUrl} controls className="rounded-lg max-h-[200px]" />
+        )}
+        {msg.body && <p className="text-sm whitespace-pre-wrap">{msg.body}</p>}
+        <p className={`text-[10px] mt-1 ${isMine ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
+          {format(new Date(msg.created_at), "HH:mm")}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function EnlargedImageOverlay({ mediaUrl, onClose }: { mediaUrl: string; onClose: () => void }) {
+  const signedUrl = useSignedUrl("media", mediaUrl);
+  if (!signedUrl) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <img src={signedUrl} alt="Enlarged" className="max-w-[90vw] max-h-[90vh] rounded-lg" />
+    </div>
+  );
+}
 
 export default function Conversation() {
   const { conversationId } = useParams<{ conversationId: string }>();
@@ -106,11 +147,10 @@ export default function Conversation() {
     const path = `${user.id}/${Date.now()}-${file.name}`;
     const { error } = await supabase.storage.from("media").upload(path, file);
     if (error) { alert("Upload failed"); setUploading(false); return; }
-    const { data: { publicUrl } } = supabase.storage.from("media").getPublicUrl(path);
     await supabase.from("messages").insert({
       conversation_id: conversationId,
       sender_user_id: user.id,
-      media_url: publicUrl,
+      media_url: path,
       media_type: type,
     });
     setUploading(false);
@@ -128,41 +168,20 @@ export default function Conversation() {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-        {messages.map((msg) => {
-          const isMine = msg.sender_user_id === user?.id;
-          return (
-            <div key={msg.id} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
-              <div className={`max-w-[75%] rounded-xl px-3 py-2 ${isMine ? "bg-primary text-primary-foreground" : "bg-card border border-border"}`}>
-                {msg.media_type === "image" && msg.media_url && (
-                  <img
-                    src={msg.media_url}
-                    alt="Photo"
-                    className="rounded-lg max-h-[200px] cursor-pointer"
-                    onClick={() => setEnlargedImage(msg.media_url)}
-                  />
-                )}
-                {msg.media_type === "video" && msg.media_url && (
-                  <video src={msg.media_url} controls className="rounded-lg max-h-[200px]" />
-                )}
-                {msg.body && <p className="text-sm whitespace-pre-wrap">{msg.body}</p>}
-                <p className={`text-[10px] mt-1 ${isMine ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
-                  {format(new Date(msg.created_at), "HH:mm")}
-                </p>
-              </div>
-            </div>
-          );
-        })}
+        {messages.map((msg) => (
+          <MessageBubble
+            key={msg.id}
+            msg={msg}
+            isMine={msg.sender_user_id === user?.id}
+            onEnlarge={setEnlargedImage}
+          />
+        ))}
         <div ref={bottomRef} />
       </div>
 
       {/* Enlarged image overlay */}
       {enlargedImage && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
-          onClick={() => setEnlargedImage(null)}
-        >
-          <img src={enlargedImage} alt="Enlarged" className="max-w-[90vw] max-h-[90vh] rounded-lg" />
-        </div>
+        <EnlargedImageOverlay mediaUrl={enlargedImage} onClose={() => setEnlargedImage(null)} />
       )}
 
       {/* Input bar */}
