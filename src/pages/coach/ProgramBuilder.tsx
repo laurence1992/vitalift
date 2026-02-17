@@ -2,6 +2,16 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Plus, Trash2, ChevronUp, ChevronDown, GripVertical } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -54,6 +64,7 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
   const [saving, setSaving] = useState(false);
   const [exercisePickerOpen, setExercisePickerOpen] = useState(false);
   const [targetDayIdx, setTargetDayIdx] = useState(0);
+  const [deleteDayIdx, setDeleteDayIdx] = useState<number | null>(null);
 
   // Load existing program
   useEffect(() => {
@@ -140,6 +151,17 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
       ...prev,
       { label: `Day ${prev.length + 1}`, sort_order: prev.length, day_note: "", exercises: [] },
     ]);
+  };
+
+  const deleteDay = (dayIdx: number) => {
+    setDays((prev) => {
+      if (prev.length <= 1) {
+        // Replace with empty Day 1 instead of deleting last day
+        return [{ label: "Day 1", sort_order: 0, day_note: "", exercises: [] }];
+      }
+      return prev.filter((_, i) => i !== dayIdx).map((d, i) => ({ ...d, sort_order: i }));
+    });
+    setDeleteDayIdx(null);
   };
 
   const openExercisePicker = (dayIdx: number) => {
@@ -387,6 +409,15 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
               className="h-8 text-xs flex-1 bg-white text-black caret-black placeholder:text-gray-400"
               style={{ WebkitTextFillColor: "#000" }}
             />
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8 shrink-0 text-destructive"
+              onClick={() => setDeleteDayIdx(dayIdx)}
+              title="Delete day"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
 
           {/* Exercises in this day */}
@@ -515,6 +546,27 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
           <ExerciseLibrary selectable onSelect={addExerciseToDay} />
         </DialogContent>
       </Dialog>
+
+      {/* Delete day confirmation */}
+      <AlertDialog open={deleteDayIdx !== null} onOpenChange={() => setDeleteDayIdx(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this day?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will remove the day and all its exercises. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteDayIdx !== null && deleteDay(deleteDayIdx)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
