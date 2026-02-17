@@ -52,6 +52,9 @@ export type Database = {
       }
       health_entries: {
         Row: {
+          blood_pressure_diastolic: number | null
+          blood_pressure_systolic: number | null
+          body_fat: number | null
           bodyweight: number | null
           caloric_intake: number | null
           calories_burned: number | null
@@ -64,6 +67,9 @@ export type Database = {
           steps: number | null
         }
         Insert: {
+          blood_pressure_diastolic?: number | null
+          blood_pressure_systolic?: number | null
+          body_fat?: number | null
           bodyweight?: number | null
           caloric_intake?: number | null
           calories_burned?: number | null
@@ -76,6 +82,9 @@ export type Database = {
           steps?: number | null
         }
         Update: {
+          blood_pressure_diastolic?: number | null
+          blood_pressure_systolic?: number | null
+          body_fat?: number | null
           bodyweight?: number | null
           caloric_intake?: number | null
           calories_burned?: number | null
