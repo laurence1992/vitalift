@@ -1,9 +1,16 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Settings as SettingsIcon, LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Settings() {
   const { profile, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/auth");
+  };
 
   return (
     <div className="min-h-screen pb-24">
@@ -18,10 +25,10 @@ export default function Settings() {
         <div className="rounded-xl border border-border bg-card p-4 space-y-2">
           <p className="text-sm font-medium">{profile?.name || "No name"}</p>
           <p className="text-xs text-muted-foreground">{profile?.email}</p>
-          <p className="text-xs text-primary capitalize">{profile?.role}</p>
+          <p className="text-xs text-primary capitalize">Signed in as: {profile?.email} ({profile?.role})</p>
         </div>
 
-        <Button variant="destructive" className="w-full gap-2" onClick={signOut}>
+        <Button variant="destructive" className="w-full gap-2" onClick={handleSignOut}>
           <LogOut className="h-4 w-4" />
           Sign Out
         </Button>
