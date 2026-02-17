@@ -1,9 +1,8 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { ArrowLeft, Send, Image, Video } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { useSignedUrl } from "@/hooks/useSignedUrl";
@@ -17,9 +16,11 @@ type Message = {
   media_type: string;
   created_at: string;
   read_at: string | null;
+  _pending?: boolean;
+  _failed?: boolean;
 };
 
-function MessageBubble({ msg, isMine, onEnlarge }: { msg: Message; isMine: boolean; onEnlarge: (url: string) => void }) {
+function MessageBubble({ msg, isMine, onEnlarge, onRetry }: { msg: Message; isMine: boolean; onEnlarge: (url: string) => void; onRetry?: () => void }) {
   const signedUrl = useSignedUrl("media", msg.media_url);
 
   return (
@@ -37,9 +38,16 @@ function MessageBubble({ msg, isMine, onEnlarge }: { msg: Message; isMine: boole
           <video src={signedUrl} controls className="rounded-lg max-h-[200px]" />
         )}
         {msg.body && <p className="text-sm whitespace-pre-wrap">{msg.body}</p>}
-        <p className={`text-[10px] mt-1 ${isMine ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
-          {format(new Date(msg.created_at), "HH:mm")}
-        </p>
+        <div className="flex items-center gap-1.5 mt-1">
+          <p className={`text-[10px] ${isMine ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
+            {msg._pending ? "Sending..." : msg._failed ? "Failed" : format(new Date(msg.created_at), "HH:mm")}
+          </p>
+          {msg._failed && onRetry && (
+            <button onClick={onRetry} className="text-[10px] underline text-destructive-foreground">
+              Retry
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -66,9 +74,11 @@ export default function Conversation() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [sending, setSending] = useState(false);
   const [otherName, setOtherName] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (!conversationId || !user) return;
@@ -110,7 +120,18 @@ export default function Conversation() {
         filter: `conversation_id=eq.${conversationId}`,
       }, (payload) => {
         const newMsg = payload.new as Message;
-        setMessages((prev) => [...prev, newMsg]);
+        setMessages((prev) => {
+          // If this message was sent by us (optimistic), replace the pending one
+          const pendingIdx = prev.findIndex((m) => m._pending && m.sender_user_id === newMsg.sender_user_id && m.body === newMsg.body);
+          if (pendingIdx !== -1) {
+            const updated = [...prev];
+            updated[pendingIdx] = newMsg;
+            return updated;
+          }
+          // Otherwise just append if not already present
+          if (prev.some((m) => m.id === newMsg.id)) return prev;
+          return [...prev, newMsg];
+        });
         // Auto-mark read if not sender
         if (newMsg.sender_user_id !== user.id) {
           supabase.from("messages").update({ read_at: new Date().toISOString() }).eq("id", newMsg.id);
@@ -125,16 +146,50 @@ export default function Conversation() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const sendText = async () => {
-    if (!text.trim() || !user || !conversationId) return;
-    await supabase.from("messages").insert({
+  const sendText = useCallback(async () => {
+    if (!text.trim() || !user || !conversationId || sending) return;
+    const body = text.trim();
+    setText("");
+    setSending(true);
+
+    // Optimistic: add pending message
+    const tempId = `temp-${Date.now()}`;
+    const pendingMsg: Message = {
+      id: tempId,
       conversation_id: conversationId,
       sender_user_id: user.id,
-      body: text.trim(),
+      body,
+      media_url: null,
+      media_type: "text",
+      created_at: new Date().toISOString(),
+      read_at: null,
+      _pending: true,
+    };
+    setMessages((prev) => [...prev, pendingMsg]);
+
+    const { error } = await supabase.from("messages").insert({
+      conversation_id: conversationId,
+      sender_user_id: user.id,
+      body,
       media_type: "text",
     });
-    setText("");
-  };
+
+    if (error) {
+      // Mark as failed
+      setMessages((prev) =>
+        prev.map((m) => m.id === tempId ? { ...m, _pending: false, _failed: true } : m)
+      );
+    }
+    // On success, realtime subscription will replace the pending message
+    setSending(false);
+  }, [text, user, conversationId, sending]);
+
+  const retryMessage = useCallback(async (msg: Message) => {
+    if (!user || !conversationId) return;
+    // Remove failed message and re-send
+    setMessages((prev) => prev.filter((m) => m.id !== msg.id));
+    setText(msg.body || "");
+  }, [user, conversationId]);
 
   const uploadMedia = async (file: File, type: "image" | "video") => {
     if (!user || !conversationId) return;
@@ -174,6 +229,7 @@ export default function Conversation() {
             msg={msg}
             isMine={msg.sender_user_id === user?.id}
             onEnlarge={setEnlargedImage}
+            onRetry={msg._failed ? () => retryMessage(msg) : undefined}
           />
         ))}
         <div ref={bottomRef} />
@@ -200,15 +256,23 @@ export default function Conversation() {
             if (f) uploadMedia(f, "video");
           }} />
         </label>
-        <Input
+        <textarea
+          ref={inputRef}
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Type a message..."
-          className="flex-1"
-          onKeyDown={(e) => { if (e.key === "Enter") sendText(); }}
+          rows={1}
+          className="flex-1 resize-none rounded-md border border-input px-3 py-2 text-sm bg-white text-black caret-black placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          style={{ WebkitTextFillColor: "#000" }}
+          onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendText(); } }}
           disabled={uploading}
         />
-        <Button size="icon" onClick={sendText} disabled={!text.trim() || uploading}>
+        <Button
+          size="icon"
+          onClick={sendText}
+          disabled={!text.trim() || uploading || sending}
+          className="bg-primary text-primary-foreground hover:bg-primary/90"
+        >
           <Send className="h-4 w-4" />
         </Button>
       </div>

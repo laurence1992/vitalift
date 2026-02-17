@@ -491,9 +491,8 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
           ))}
 
           <Button
-            variant="outline"
             size="sm"
-            className="w-full gap-1 text-xs"
+            className="w-full gap-1 text-xs bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={() => openExercisePicker(dayIdx)}
           >
             <Plus className="h-3 w-3" /> Add Exercise
@@ -501,11 +500,11 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
         </div>
       ))}
 
-      <Button variant="outline" onClick={addDay} className="w-full gap-2">
+      <Button variant="outline" onClick={addDay} className="w-full gap-2 border-primary/30 text-primary hover:bg-primary/10">
         <Plus className="h-4 w-4" /> Add Day
       </Button>
 
-      <Button onClick={handleSave} disabled={saving} className="w-full h-11 text-base font-semibold">
+      <Button onClick={handleSave} disabled={saving} className="w-full h-11 text-base font-semibold bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-primary/60 disabled:text-primary-foreground/80">
         {saving ? "Saving..." : "Save Program"}
       </Button>
 
