@@ -4,9 +4,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dumbbell } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Link, useNavigate } from "react-router-dom";
 
-const authInputClass =
-  "text-foreground caret-foreground placeholder:text-muted-foreground [&]:[-webkit-text-fill-color:hsl(var(--foreground))]";
+const COACH_EMAILS = ["larry92roche@gmail.com"];
+
+const inputClass =
+  "bg-white text-black placeholder:text-gray-500 caret-black [&]:[-webkit-text-fill-color:black]";
+
+async function enforceCoachRole(userId: string) {
+  const { error } = await supabase
+    .from("profiles")
+    .update({ role: "coach" as any })
+    .eq("id", userId);
+  if (error) console.error("Failed to enforce coach role:", error);
+}
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -16,8 +27,9 @@ export default function Auth() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [forgotMode, setForgotMode] = useState(false);
+  const [fixingCoach, setFixingCoach] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,27 +38,16 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      if (forgotMode) {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/reset-password`,
-        });
-        if (error) {
-          console.error("Password reset error:", error);
-          setError(error.message);
-        } else {
-          setMessage("Check your email for a password reset link!");
-          toast({ title: "Reset email sent", description: "Check your inbox." });
-        }
-        setLoading(false);
-        return;
-      }
-
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
           console.error("Sign in error:", error);
           setError(error.message);
-        } else {
+        } else if (data.user) {
+          // Enforce coach role if email matches
+          if (COACH_EMAILS.includes(email.toLowerCase())) {
+            await enforceCoachRole(data.user.id);
+          }
           toast({ title: "Signed in successfully!" });
         }
       } else {
@@ -64,7 +65,11 @@ export default function Auth() {
         } else if (data.user && !data.session) {
           setMessage("Check your email for a confirmation link, then sign in.");
           toast({ title: "Account created!", description: "Please confirm your email." });
-        } else if (data.session) {
+        } else if (data.session && data.user) {
+          // Enforce coach role if email matches
+          if (COACH_EMAILS.includes(email.toLowerCase())) {
+            await enforceCoachRole(data.user.id);
+          }
           toast({ title: "Account created & signed in!" });
         }
       }
@@ -73,6 +78,33 @@ export default function Auth() {
       setError("Network error. Please check your connection and try again.");
     }
     setLoading(false);
+  };
+
+  const handleFixCoachAccess = async () => {
+    setFixingCoach(true);
+    setError("");
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setError("You must be signed in first. Sign in, then click this again.");
+        setFixingCoach(false);
+        return;
+      }
+      if (!COACH_EMAILS.includes(user.email?.toLowerCase() ?? "")) {
+        setError("Your email is not in the coach list.");
+        setFixingCoach(false);
+        return;
+      }
+      await enforceCoachRole(user.id);
+      toast({ title: "Coach access restored!" });
+      // Force profile refetch by navigating
+      navigate("/");
+      window.location.reload();
+    } catch (err: any) {
+      console.error("Fix coach error:", err);
+      setError("Failed to fix coach access.");
+    }
+    setFixingCoach(false);
   };
 
   return (
@@ -84,22 +116,18 @@ export default function Auth() {
             <h1 className="text-3xl font-bold text-foreground">VitaLift</h1>
           </div>
           <p className="text-muted-foreground text-sm">
-            {forgotMode
-              ? "Reset your password"
-              : isLogin
-              ? "Sign in to your account"
-              : "Create your account"}
+            {isLogin ? "Sign in to your account" : "Create your account"}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {!isLogin && !forgotMode && (
+          {!isLogin && (
             <Input
               placeholder="Full name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className={authInputClass}
+              className={inputClass}
             />
           )}
           <Input
@@ -108,65 +136,57 @@ export default function Auth() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className={authInputClass}
+            className={inputClass}
           />
-          {!forgotMode && (
-            <Input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              className={authInputClass}
-            />
-          )}
+          <Input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={6}
+            className={inputClass}
+          />
 
           {error && <p className="text-sm text-destructive font-medium">{error}</p>}
-          {message && <p className="text-sm text-primary font-medium">{message}</p>}
+          {message && <p className="text-sm text-green-500 font-medium">{message}</p>}
 
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading
-              ? "Loading..."
-              : forgotMode
-              ? "Send Reset Link"
-              : isLogin
-              ? "Sign In"
-              : "Sign Up"}
+            {loading ? "Loading..." : isLogin ? "Sign In" : "Sign Up"}
           </Button>
         </form>
 
-        {isLogin && !forgotMode && (
+        {isLogin && (
           <p className="text-center">
-            <button
-              onClick={() => { setForgotMode(true); setError(""); setMessage(""); }}
+            <Link
+              to="/reset-password"
               className="text-sm text-muted-foreground hover:text-primary hover:underline"
             >
               Forgot password?
-            </button>
+            </Link>
           </p>
         )}
 
         <p className="text-center text-sm text-muted-foreground">
-          {forgotMode ? (
-            <button
-              onClick={() => { setForgotMode(false); setError(""); setMessage(""); }}
-              className="text-primary font-medium hover:underline"
-            >
-              Back to Sign In
-            </button>
-          ) : (
-            <>
-              {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-              <button
-                onClick={() => { setIsLogin(!isLogin); setError(""); setMessage(""); }}
-                className="text-primary font-medium hover:underline"
-              >
-                {isLogin ? "Sign Up" : "Sign In"}
-              </button>
-            </>
-          )}
+          {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
+          <button
+            onClick={() => { setIsLogin(!isLogin); setError(""); setMessage(""); }}
+            className="text-primary font-medium hover:underline"
+          >
+            {isLogin ? "Sign Up" : "Sign In"}
+          </button>
         </p>
+
+        {/* Coach access fallback */}
+        <div className="text-center pt-2 border-t border-muted">
+          <button
+            onClick={handleFixCoachAccess}
+            disabled={fixingCoach}
+            className="text-xs text-muted-foreground hover:text-primary hover:underline"
+          >
+            {fixingCoach ? "Fixing..." : "Fix my coach access"}
+          </button>
+        </div>
       </div>
     </div>
   );
