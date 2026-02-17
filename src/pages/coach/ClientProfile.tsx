@@ -227,13 +227,13 @@ export default function ClientProfile() {
       <div className="px-4 pt-4 space-y-6">
         {/* Client actions */}
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" className="flex-1 gap-1.5" onClick={handleMessage}>
+          <Button size="sm" className="flex-1 gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90" onClick={handleMessage}>
             <MessageSquare className="h-3.5 w-3.5" /> Message
           </Button>
           <Button
             size="sm"
             variant="outline"
-            className={`flex-1 gap-1.5 ${client?.status === "archived" ? "text-green-500" : "text-destructive"}`}
+            className={`flex-1 gap-1.5 ${client?.status === "archived" ? "text-green-600 border-green-300 hover:bg-green-50" : "text-destructive border-destructive/30 hover:bg-destructive/10"}`}
             onClick={handleArchiveToggle}
           >
             {client?.status === "archived" ? <RotateCcw className="h-3.5 w-3.5" /> : <Archive className="h-3.5 w-3.5" />}
@@ -248,7 +248,7 @@ export default function ClientProfile() {
               <Dumbbell className="h-4 w-4 text-primary" />
               <h2 className="text-sm font-semibold">Assigned Program</h2>
             </div>
-            <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={() => setShowBuilder(true)}>
+            <Button size="sm" className="h-7 text-xs gap-1 bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => setShowBuilder(true)}>
               <Edit className="h-3 w-3" />
               {program ? "Edit" : "Create"}
             </Button>

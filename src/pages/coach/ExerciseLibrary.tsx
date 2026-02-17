@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Search, Plus, Archive, RotateCcw, X } from "lucide-react";
+import { Search, Plus, Archive, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,6 +27,11 @@ export type CoachExercise = {
 const CATEGORIES = ["Compound", "Isolation", "Bodyweight", "Cardio", "Other"];
 const MUSCLE_GROUPS = ["Chest", "Back", "Shoulders", "Arms", "Core", "Legs", "Glutes", "Full Body"];
 const EQUIPMENT = ["Barbell", "Dumbbell", "Cable", "Machine", "Bodyweight", "Band", "Other"];
+
+/** Returns true if exercise has both valid image and video URLs */
+function hasValidMedia(ex: CoachExercise): boolean {
+  return !!(ex.image_url && ex.image_url.trim() !== "" && ex.video_url && ex.video_url.trim() !== "");
+}
 
 export default function ExerciseLibrary({
   onSelect,
@@ -73,15 +78,18 @@ export default function ExerciseLibrary({
       setSeeded(true);
       await seedStaticExercises();
     } else if (!seeded && result.length > 0 && !showArchived) {
-      // Backfill image_url/video_url for existing exercises missing media
       setSeeded(true);
-      await backfillMedia(result);
+      await backfillAndCleanup(result);
     }
   };
 
   const seedStaticExercises = async () => {
     if (!user) return;
-    const rows = staticExercises.map((ex) => ({
+    // Only seed exercises that have both image and video
+    const validStatic = staticExercises.filter(
+      (ex) => ex.image && ex.image.trim() !== "" && ex.videoUrl && ex.videoUrl.trim() !== ""
+    );
+    const rows = validStatic.map((ex) => ({
       coach_id: user.id,
       name: ex.name,
       image_url: ex.image || null,
@@ -95,10 +103,15 @@ export default function ExerciseLibrary({
     load();
   };
 
-  const backfillMedia = async (existing: CoachExercise[]) => {
+  const backfillAndCleanup = async (existing: CoachExercise[]) => {
     if (!user) return;
     let updated = false;
+
+    // Backfill media from static exercises
     for (const staticEx of staticExercises) {
+      // Skip static exercises without both media
+      if (!staticEx.image || !staticEx.videoUrl || staticEx.videoUrl.trim() === "") continue;
+
       const match = existing.find((e) => e.name === staticEx.name);
       if (match && (!match.image_url || !match.video_url)) {
         await supabase.from("coach_exercises").update({
@@ -108,12 +121,25 @@ export default function ExerciseLibrary({
         updated = true;
       }
     }
+
+    // Auto-archive exercises that still lack both media
+    const toArchive = existing.filter((ex) => !hasValidMedia(ex) && !ex.archived_at);
+    for (const ex of toArchive) {
+      await supabase.from("coach_exercises").update({
+        archived_at: new Date().toISOString(),
+      } as any).eq("id", ex.id);
+      updated = true;
+    }
+
     if (updated) load();
   };
 
   useEffect(() => { load(); }, [user, showArchived]);
 
+  // For active (non-archived) view, only show exercises with valid media
   const filtered = exercises.filter((ex) => {
+    // In active view, enforce media rule
+    if (!showArchived && !hasValidMedia(ex)) return false;
     if (search && !ex.name.toLowerCase().includes(search.toLowerCase())) return false;
     if (filterMuscle && ex.muscle_group !== filterMuscle) return false;
     if (filterEquipment && ex.equipment !== filterEquipment) return false;
@@ -163,10 +189,28 @@ export default function ExerciseLibrary({
           />
         </div>
         {!selectable && (
-          <Button size="sm" variant="outline" onClick={() => setShowArchived(!showArchived)}>
-            <Archive className="h-3.5 w-3.5 mr-1" />
-            {showArchived ? "Active" : "Archived"}
-          </Button>
+          <div className="flex rounded-lg border border-primary/30 overflow-hidden">
+            <button
+              onClick={() => setShowArchived(false)}
+              className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                !showArchived
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-transparent text-primary border-r border-primary/30 hover:bg-primary/10"
+              }`}
+            >
+              Active
+            </button>
+            <button
+              onClick={() => setShowArchived(true)}
+              className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                showArchived
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-transparent text-primary hover:bg-primary/10"
+              }`}
+            >
+              Archived
+            </button>
+          </div>
         )}
       </div>
 
@@ -204,6 +248,12 @@ export default function ExerciseLibrary({
             }`}
             onClick={() => selectable && onSelect?.(ex)}
           >
+            {/* Thumbnail */}
+            {ex.image_url && (
+              <div className="h-10 w-10 shrink-0 rounded-md bg-muted/30 overflow-hidden flex items-center justify-center">
+                <img src={ex.image_url} alt={ex.name} className="h-full w-full object-contain" />
+              </div>
+            )}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">{ex.name}</p>
               <p className="text-xs text-muted-foreground truncate">
@@ -226,7 +276,7 @@ export default function ExerciseLibrary({
 
       {/* Add button */}
       {!selectable && (
-        <Button onClick={() => setAddOpen(true)} className="w-full gap-2">
+        <Button onClick={() => setAddOpen(true)} className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
           <Plus className="h-4 w-4" /> Add Exercise
         </Button>
       )}
@@ -258,7 +308,9 @@ export default function ExerciseLibrary({
               </SelectContent>
             </Select>
             <Textarea placeholder="Notes" value={form.notes} onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))} />
-            <Button onClick={handleAdd} disabled={!form.name.trim()} className="w-full">Add Exercise</Button>
+            <Button onClick={handleAdd} disabled={!form.name.trim()} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
+              Add Exercise
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
