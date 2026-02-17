@@ -40,6 +40,7 @@ export default function ExerciseLibrary({
   onSelect?: (exercise: CoachExercise) => void;
   selectable?: boolean;
 }) {
+  const [detailExercise, setDetailExercise] = useState<CoachExercise | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
   const [exercises, setExercises] = useState<CoachExercise[]>([]);
@@ -243,10 +244,8 @@ export default function ExerciseLibrary({
         {filtered.map((ex) => (
           <div
             key={ex.id}
-            className={`flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-2.5 ${
-              selectable ? "cursor-pointer hover:bg-muted/50 active:scale-[0.98]" : ""
-            }`}
-            onClick={() => selectable && onSelect?.(ex)}
+            className="flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-2.5 cursor-pointer hover:bg-muted/50 active:scale-[0.98]"
+            onClick={() => selectable ? onSelect?.(ex) : setDetailExercise(ex)}
           >
             {/* Thumbnail */}
             {ex.image_url && (
@@ -280,6 +279,45 @@ export default function ExerciseLibrary({
           <Plus className="h-4 w-4" /> Add Exercise
         </Button>
       )}
+
+      {/* Exercise detail modal */}
+      <Dialog open={!!detailExercise} onOpenChange={() => setDetailExercise(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{detailExercise?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {detailExercise?.image_url && (
+              <img
+                src={detailExercise.image_url}
+                alt={detailExercise.name}
+                className="w-full max-h-[250px] rounded-lg object-contain bg-muted/30"
+              />
+            )}
+            {detailExercise?.notes && (
+              <p className="text-sm text-muted-foreground">{detailExercise.notes}</p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              {[detailExercise?.muscle_group, detailExercise?.equipment, detailExercise?.category].filter(Boolean).join(" · ")}
+            </p>
+            {detailExercise?.video_url && (() => {
+              const url = detailExercise.video_url!.trim().startsWith("http")
+                ? detailExercise.video_url!.trim()
+                : `https://${detailExercise.video_url!.trim()}`;
+              return (
+                <a
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground no-underline"
+                >
+                  Watch Demo
+                </a>
+              );
+            })()}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Add exercise dialog */}
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
