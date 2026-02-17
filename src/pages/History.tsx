@@ -87,16 +87,16 @@ export default function History() {
             <button
               key={w.id}
               onClick={() => navigate(`/history/${w.id}`)}
-              className="flex w-full items-center justify-between rounded-xl border border-border bg-card px-4 py-3 text-left active:scale-[0.98] transition-all"
+              className="flex w-full items-center justify-between rounded-xl bg-primary text-white px-4 py-3 text-left hover:bg-primary/90 active:scale-[0.98] transition-all"
             >
               <div>
-                <p className="text-sm font-semibold">{dayLabels[w.day_id] || w.day_id}</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm font-semibold text-white">{dayLabels[w.day_id] || w.day_id}</p>
+                <p className="text-xs text-white/70">
                   {format(new Date(w.date), "EEEE, MMM d, yyyy")}
                   {w.duration_seconds ? ` · ${formatDuration(w.duration_seconds)}` : ""}
                 </p>
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              <ChevronRight className="h-4 w-4 text-white/70" />
             </button>
           ))
         )}

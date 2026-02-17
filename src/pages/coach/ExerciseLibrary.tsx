@@ -244,7 +244,7 @@ export default function ExerciseLibrary({
         {filtered.map((ex) => (
           <div
             key={ex.id}
-            className="flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-2.5 cursor-pointer hover:bg-muted/50 active:scale-[0.98]"
+            className="flex items-center gap-3 rounded-xl bg-primary text-white px-3 py-2.5 cursor-pointer hover:bg-primary/90 active:scale-[0.98]"
             onClick={() => selectable ? onSelect?.(ex) : setDetailExercise(ex)}
           >
             {/* Thumbnail */}
@@ -254,8 +254,8 @@ export default function ExerciseLibrary({
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{ex.name}</p>
-              <p className="text-xs text-muted-foreground truncate">
+              <p className="text-sm font-medium truncate text-white">{ex.name}</p>
+              <p className="text-xs text-white/70 truncate">
                 {[ex.muscle_group, ex.equipment, ex.category].filter(Boolean).join(" · ") || "Uncategorized"}
               </p>
             </div>

@@ -22,10 +22,10 @@ export default function Settings() {
       </div>
 
       <div className="px-5 -mt-4 space-y-4">
-        <div className="rounded-xl border border-border bg-card p-4 space-y-2">
-          <p className="text-sm font-medium">{profile?.name || "No name"}</p>
-          <p className="text-xs text-muted-foreground">{profile?.email}</p>
-          <p className="text-xs text-primary capitalize">Signed in as: {profile?.email} ({profile?.role})</p>
+        <div className="rounded-xl bg-primary p-4 space-y-2">
+          <p className="text-sm font-medium text-white">{profile?.name || "No name"}</p>
+          <p className="text-xs text-white/70">{profile?.email}</p>
+          <p className="text-xs text-white/80 capitalize">Signed in as: {profile?.email} ({profile?.role})</p>
         </div>
 
         <Button variant="destructive" className="w-full gap-2" onClick={handleSignOut}>

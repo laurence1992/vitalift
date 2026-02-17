@@ -136,11 +136,11 @@ export default function CoachDashboard() {
           <button
             key={c.id}
             onClick={() => navigate(`/coach/client/${c.id}`)}
-            className="flex w-full items-center justify-between rounded-xl border border-border bg-card px-4 py-4 text-left transition-all active:scale-[0.98]"
+            className="flex w-full items-center justify-between rounded-xl bg-primary text-white px-4 py-4 text-left transition-all hover:bg-primary/90 active:scale-[0.98]"
           >
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold truncate">{c.name && c.name.trim() ? c.name : "Unnamed Client"}</p>
-              <p className="text-xs text-muted-foreground truncate">{c.email}</p>
+              <p className="text-xs text-white/70 truncate">{c.email}</p>
             </div>
             <div className="flex items-center gap-1.5 ml-2 shrink-0">
               <Button
@@ -170,7 +170,7 @@ export default function CoachDashboard() {
                   <Trash2 className="h-4 w-4" />
                 </Button>
               )}
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              <ChevronRight className="h-4 w-4 text-white/70" />
             </div>
           </button>
         ))}
