@@ -27,25 +27,25 @@ function RecipeCard({ recipe: r, isCoach, onEdit, onDelete }: { recipe: Recipe; 
   const signedUrl = useSignedUrl("recipe-images", r.image_url);
 
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
+    <div className="rounded-xl bg-primary text-white overflow-hidden">
       {signedUrl && (
         <img src={signedUrl} alt={r.title} className="w-full h-40 object-cover" />
       )}
       <div className="p-4 space-y-2">
         <div className="flex items-start justify-between">
-          <h3 className="text-base font-bold">{r.title}</h3>
+          <h3 className="text-base font-bold text-white">{r.title}</h3>
           {isCoach && (
             <div className="flex gap-1">
-              <button onClick={() => onEdit(r)} className="p-1 text-muted-foreground hover:text-foreground">
+              <button onClick={() => onEdit(r)} className="p-1 text-white/70 hover:text-white">
                 <Edit2 className="h-4 w-4" />
               </button>
-              <button onClick={() => onDelete(r.id)} className="p-1 text-muted-foreground hover:text-destructive">
+              <button onClick={() => onDelete(r.id)} className="p-1 text-white/70 hover:text-white">
                 <Trash2 className="h-4 w-4" />
               </button>
             </div>
           )}
         </div>
-        <div className="flex gap-3 text-xs text-muted-foreground">
+        <div className="flex gap-3 text-xs text-white/70">
           {r.calories != null && <span>{r.calories} cal</span>}
           {r.protein != null && <span>{r.protein}g P</span>}
           {r.carbs != null && <span>{r.carbs}g C</span>}
@@ -53,14 +53,14 @@ function RecipeCard({ recipe: r, isCoach, onEdit, onDelete }: { recipe: Recipe; 
         </div>
         {r.ingredients && (
           <div>
-            <p className="text-xs font-semibold text-muted-foreground mb-1">Ingredients</p>
-            <p className="text-sm whitespace-pre-line">{r.ingredients}</p>
+            <p className="text-xs font-semibold text-white/80 mb-1">Ingredients</p>
+            <p className="text-sm whitespace-pre-line text-white">{r.ingredients}</p>
           </div>
         )}
         {r.instructions && (
           <div>
-            <p className="text-xs font-semibold text-muted-foreground mb-1">Instructions</p>
-            <p className="text-sm whitespace-pre-line">{r.instructions}</p>
+            <p className="text-xs font-semibold text-white/80 mb-1">Instructions</p>
+            <p className="text-sm whitespace-pre-line text-white">{r.instructions}</p>
           </div>
         )}
       </div>

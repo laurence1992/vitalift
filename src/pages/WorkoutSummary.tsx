@@ -149,11 +149,11 @@ export default function WorkoutSummary() {
           );
 
           return (
-            <div key={exId} className="rounded-xl border border-border bg-card p-4">
+            <div key={exId} className="rounded-xl bg-primary text-white p-4">
               <div className="flex items-center gap-3 mb-3">
                 <div className="flex-1">
-                  <p className="text-sm font-semibold">{exerciseNames[exId] || exId}</p>
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                  <p className="text-sm font-semibold text-white">{exerciseNames[exId] || exId}</p>
+                  <div className="flex items-center gap-3 text-xs text-white/70">
                     {volume > 0 && <span>Vol: {volume.toLocaleString()} kg</span>}
                     {bestSet && (
                       <span className="flex items-center gap-1">
@@ -166,8 +166,8 @@ export default function WorkoutSummary() {
               </div>
               <div className="space-y-1">
                 {exSets.map((s, i) => (
-                  <div key={i} className="flex items-center gap-4 rounded-lg bg-muted/50 px-3 py-1.5 text-sm">
-                    <span className="w-8 text-xs font-bold text-muted-foreground">Set {s.set_number}</span>
+                  <div key={i} className="flex items-center gap-4 rounded-lg bg-white/10 px-3 py-1.5 text-sm text-white">
+                    <span className="w-8 text-xs font-bold text-white/80">Set {s.set_number}</span>
                     <span>{s.weight ?? "–"} kg</span>
                     <span>× {s.reps ?? "–"}</span>
                   </div>
@@ -178,9 +178,9 @@ export default function WorkoutSummary() {
         })}
 
         {workout.session_notes && (
-          <div className="rounded-xl border border-border bg-card p-4">
-            <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Notes</p>
-            <p className="text-sm whitespace-pre-wrap">{workout.session_notes}</p>
+          <div className="rounded-xl bg-primary text-white p-4">
+            <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-white/80">Notes</p>
+            <p className="text-sm whitespace-pre-wrap text-white">{workout.session_notes}</p>
           </div>
         )}
       </div>

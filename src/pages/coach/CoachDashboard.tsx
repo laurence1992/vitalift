@@ -145,7 +145,7 @@ export default function CoachDashboard() {
             <div className="flex items-center gap-1.5 ml-2 shrink-0">
               <Button
                 size="icon"
-                className="h-8 w-8 bg-primary text-primary-foreground hover:bg-primary/90"
+                className="h-8 w-8 bg-white/20 text-white hover:bg-white/30"
                 onClick={(e) => { e.stopPropagation(); handleMessage(c.id); }}
                 title="Message"
               >
@@ -154,7 +154,7 @@ export default function CoachDashboard() {
               {showArchived ? (
                 <Button
                   size="icon"
-                  className="h-8 w-8 bg-primary text-primary-foreground hover:bg-primary/90"
+                  className="h-8 w-8 bg-white/20 text-white hover:bg-white/30"
                   onClick={(e) => { e.stopPropagation(); setRestoreTarget(c); }}
                   title="Restore"
                 >
@@ -163,7 +163,7 @@ export default function CoachDashboard() {
               ) : (
                 <Button
                   size="icon"
-                  className="h-8 w-8 bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  className="h-8 w-8 bg-white/20 text-white hover:bg-white/30"
                   onClick={(e) => { e.stopPropagation(); setArchiveTarget(c); }}
                   title="Archive"
                 >
@@ -186,7 +186,7 @@ export default function CoachDashboard() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleArchive} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction onClick={handleArchive} className="bg-primary text-primary-foreground hover:bg-primary/90">
               Archive
             </AlertDialogAction>
           </AlertDialogFooter>
