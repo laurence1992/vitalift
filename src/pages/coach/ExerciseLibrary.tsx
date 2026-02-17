@@ -72,6 +72,10 @@ export default function ExerciseLibrary({
     if (!seeded && result.length === 0 && !showArchived) {
       setSeeded(true);
       await seedStaticExercises();
+    } else if (!seeded && result.length > 0 && !showArchived) {
+      // Backfill image_url/video_url for existing exercises missing media
+      setSeeded(true);
+      await backfillMedia(result);
     }
   };
 
@@ -80,6 +84,7 @@ export default function ExerciseLibrary({
     const rows = staticExercises.map((ex) => ({
       coach_id: user.id,
       name: ex.name,
+      image_url: ex.image || null,
       video_url: ex.videoUrl || null,
       notes: ex.notes || null,
       category: "",
@@ -88,6 +93,22 @@ export default function ExerciseLibrary({
     }));
     await supabase.from("coach_exercises").insert(rows);
     load();
+  };
+
+  const backfillMedia = async (existing: CoachExercise[]) => {
+    if (!user) return;
+    let updated = false;
+    for (const staticEx of staticExercises) {
+      const match = existing.find((e) => e.name === staticEx.name);
+      if (match && (!match.image_url || !match.video_url)) {
+        await supabase.from("coach_exercises").update({
+          image_url: match.image_url || staticEx.image || null,
+          video_url: match.video_url || staticEx.videoUrl || null,
+        } as any).eq("id", match.id);
+        updated = true;
+      }
+    }
+    if (updated) load();
   };
 
   useEffect(() => { load(); }, [user, showArchived]);
