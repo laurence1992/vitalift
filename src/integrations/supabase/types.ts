@@ -414,6 +414,7 @@ export type Database = {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      reconcile_orphan_clients: { Args: { _coach_id: string }; Returns: number }
     }
     Enums: {
       app_role: "coach" | "client"
