@@ -23,6 +23,7 @@ export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -38,6 +39,12 @@ export default function Auth() {
     setLoading(true);
 
     try {
+      if (!isLogin && password !== confirmPassword) {
+        setError("Passwords do not match.");
+        toast({ title: "Passwords do not match", variant: "destructive" });
+        setLoading(false);
+        return;
+      }
       if (isLogin) {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
@@ -147,6 +154,17 @@ export default function Auth() {
             minLength={6}
             className={inputClass}
           />
+          {!isLogin && (
+            <Input
+              type="password"
+              placeholder="Confirm password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              minLength={6}
+              className={inputClass}
+            />
+          )}
 
           {error && <p className="text-sm text-destructive font-medium">{error}</p>}
           {message && <p className="text-sm text-green-500 font-medium">{message}</p>}
