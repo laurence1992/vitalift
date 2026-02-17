@@ -270,11 +270,11 @@ export default function Index() {
                 <button
                   key={day.id}
                   onClick={() => navigate(`/workout/program/${day.id}`)}
-                  className="flex flex-col rounded-xl border border-border bg-card p-4 text-left shadow-sm transition-all active:scale-[0.97]"
+                  className="flex flex-col rounded-xl bg-primary text-white p-4 text-left shadow-sm transition-all hover:bg-primary/90 active:scale-[0.97]"
                 >
-                  <span className="text-xs font-semibold uppercase text-primary">{day.label}</span>
-                  {day.day_note && <span className="mt-1 text-sm font-medium">{day.day_note}</span>}
-                  <span className="mt-2 text-xs text-muted-foreground">
+                  <span className="text-xs font-semibold uppercase text-white/80">{day.label}</span>
+                  {day.day_note && <span className="mt-1 text-sm font-medium text-white">{day.day_note}</span>}
+                  <span className="mt-2 text-xs text-white/70">
                     {day.exerciseCount} exercises
                   </span>
                 </button>
