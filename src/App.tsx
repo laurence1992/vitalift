@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import BottomNav from "@/components/BottomNav";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
+import UpdatePassword from "./pages/UpdatePassword";
 import Index from "./pages/Index";
 import WorkoutSession from "./pages/WorkoutSession";
 import Exercises from "./pages/Exercises";
@@ -38,6 +40,8 @@ function AppRoutes() {
     return (
       <Routes>
         <Route path="/auth" element={<Auth />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/update-password" element={<UpdatePassword />} />
         <Route path="*" element={<Navigate to="/auth" replace />} />
       </Routes>
     );
