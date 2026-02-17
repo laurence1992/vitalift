@@ -156,28 +156,34 @@ export type Database = {
       }
       profiles: {
         Row: {
+          archived_at: string | null
           coach_id: string | null
           created_at: string
           email: string
           id: string
           name: string
           role: Database["public"]["Enums"]["app_role"]
+          status: string
         }
         Insert: {
+          archived_at?: string | null
           coach_id?: string | null
           created_at?: string
           email?: string
           id: string
           name?: string
           role?: Database["public"]["Enums"]["app_role"]
+          status?: string
         }
         Update: {
+          archived_at?: string | null
           coach_id?: string | null
           created_at?: string
           email?: string
           id?: string
           name?: string
           role?: Database["public"]["Enums"]["app_role"]
+          status?: string
         }
         Relationships: [
           {
