@@ -413,7 +413,7 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
             <Button
               size="icon"
               variant="outline"
-              className="h-8 w-8 shrink-0"
+              className="h-8 w-8 shrink-0 border-border text-destructive hover:bg-destructive/10"
               onClick={() => setDeleteDayIdx(dayIdx)}
               title="Delete day"
             >
@@ -427,9 +427,9 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
               <div className="flex items-center gap-2">
                 <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
                 <p className="text-sm font-semibold text-foreground flex-1 truncate">{ex.exercise_name}</p>
-                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => moveExercise(dayIdx, exIdx, -1)}><ChevronUp className="h-3 w-3" /></Button>
-                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => moveExercise(dayIdx, exIdx, 1)}><ChevronDown className="h-3 w-3" /></Button>
-                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => removeExercise(dayIdx, exIdx)}><Trash2 className="h-3 w-3" /></Button>
+                <Button size="icon" variant="outline" className="h-6 w-6 border-border text-foreground" onClick={() => moveExercise(dayIdx, exIdx, -1)}><ChevronUp className="h-3 w-3" /></Button>
+                <Button size="icon" variant="outline" className="h-6 w-6 border-border text-foreground" onClick={() => moveExercise(dayIdx, exIdx, 1)}><ChevronDown className="h-3 w-3" /></Button>
+                <Button size="icon" variant="outline" className="h-6 w-6 border-border text-destructive" onClick={() => removeExercise(dayIdx, exIdx)}><Trash2 className="h-3 w-3" /></Button>
               </div>
 
               {/* Exercise-level targets */}
@@ -532,7 +532,7 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
         </div>
       ))}
 
-      <Button onClick={addDay} variant="outline" className="w-full gap-2">
+      <Button onClick={addDay} className="w-full gap-2">
         <Plus className="h-4 w-4" /> Add Day
       </Button>
 
