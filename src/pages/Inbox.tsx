@@ -32,12 +32,14 @@ export default function Inbox() {
 
       const enriched: ConvoWithProfile[] = [];
       for (const c of rawConvos) {
+        // Always show the OTHER person's name, never the logged-in user
         const otherId = c.coach_id === user.id ? c.client_id : c.coach_id;
+        if (!otherId || otherId === user.id) continue;
         const { data: otherProfile } = await supabase
           .from("profiles")
           .select("name, email")
           .eq("id", otherId)
-          .maybeSingle();
+          .single();
 
         const { data: lastMsg } = await supabase
           .from("messages")

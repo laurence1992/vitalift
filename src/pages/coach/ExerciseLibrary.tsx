@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { exercises as staticExercises } from "@/data/exercises";
+import { resolveExerciseImage } from "@/lib/exercise-image-map";
 
 export type CoachExercise = {
   id: string;
@@ -236,7 +237,7 @@ export default function ExerciseLibrary({
           >
             {ex.image_url && (
               <div className="h-12 w-12 shrink-0 rounded-lg bg-muted/30 overflow-hidden flex items-center justify-center">
-                <img src={ex.image_url} alt={ex.name} className="h-full w-full object-contain" />
+                <img src={resolveExerciseImage(ex.image_url)} alt={ex.name} className="h-full w-full object-contain" />
               </div>
             )}
             <div className="flex-1 min-w-0">
@@ -276,7 +277,7 @@ export default function ExerciseLibrary({
             {detailExercise?.image_url && (
               <div className="flex items-center justify-center rounded-lg bg-muted/30 p-2">
                 <img
-                  src={detailExercise.image_url}
+                  src={resolveExerciseImage(detailExercise.image_url)}
                   alt={detailExercise.name}
                   className="w-full max-h-[250px] rounded-lg object-contain"
                 />
