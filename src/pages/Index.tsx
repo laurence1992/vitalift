@@ -246,12 +246,12 @@ export default function Index() {
   }
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen bg-background pb-24">
       {/* Header */}
       <div className="bg-gradient-to-br from-primary/20 to-accent/5 px-5 pb-8 pt-12">
         <div className="flex items-center gap-3 mb-1">
           <Dumbbell className="h-7 w-7 text-primary" />
-          <h1 className="text-2xl font-bold tracking-tight">VitaLift</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">VitaLift</h1>
         </div>
         <p className="text-muted-foreground text-sm">
           {hasAssignedProgram ? assignedProgram.name : "Stronger Every Session. 💪"}
@@ -270,11 +270,11 @@ export default function Index() {
                 <button
                   key={day.id}
                   onClick={() => navigate(`/workout/program/${day.id}`)}
-                  className="flex flex-col rounded-xl bg-primary text-white p-4 text-left shadow-sm transition-all hover:bg-primary/90 active:scale-[0.97]"
+                  className="flex flex-col rounded-xl border border-border bg-card p-4 text-left shadow-sm transition-all hover:shadow-md active:scale-[0.97]"
                 >
-                  <span className="text-xs font-semibold uppercase text-white/80">{day.label}</span>
-                  {day.day_note && <span className="mt-1 text-sm font-medium text-white">{day.day_note}</span>}
-                  <span className="mt-2 text-xs text-white/70">
+                  <span className="text-xs font-semibold uppercase text-primary">{day.label}</span>
+                  {day.day_note && <span className="mt-1 text-sm font-medium text-foreground">{day.day_note}</span>}
+                  <span className="mt-2 text-xs text-muted-foreground">
                     {day.exerciseCount} exercises
                   </span>
                 </button>
@@ -286,7 +286,7 @@ export default function Index() {
         {!hasAssignedProgram && (
           <div className="rounded-xl border border-border bg-card p-6 text-center">
             <Dumbbell className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm font-medium">No program assigned yet</p>
+            <p className="text-sm font-medium text-foreground">No program assigned yet</p>
             <p className="text-xs text-muted-foreground mt-1">Your coach will assign a program for you.</p>
           </div>
         )}
@@ -334,7 +334,7 @@ export default function Index() {
                   <Camera className="h-4 w-4 text-primary" />
                   <span className="text-[11px] font-medium text-muted-foreground">Progress Photos</span>
                 </div>
-                <Button size="sm" className="h-7 px-2 text-xs bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => setPhotoOpen(true)}>
+                <Button size="sm" className="h-7 px-2 text-xs" onClick={() => setPhotoOpen(true)}>
                   <Plus className="h-3 w-3 mr-1" /> Add
                 </Button>
               </div>

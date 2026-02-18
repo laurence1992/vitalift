@@ -99,11 +99,11 @@ export default function CoachDashboard() {
   };
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen bg-background pb-24">
       <div className="bg-gradient-to-br from-primary/20 to-accent/5 px-5 pb-8 pt-12">
         <div className="flex items-center gap-3 mb-1">
           <Users className="h-7 w-7 text-primary" />
-          <h1 className="text-2xl font-bold tracking-tight">Coach Dashboard</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Coach Dashboard</h1>
         </div>
         <p className="text-muted-foreground text-sm">{clients.length} {showArchived ? "archived" : "active"} clients</p>
       </div>
@@ -136,16 +136,16 @@ export default function CoachDashboard() {
           <button
             key={c.id}
             onClick={() => navigate(`/coach/client/${c.id}`)}
-            className="flex w-full items-center justify-between rounded-xl bg-primary text-white px-4 py-4 text-left transition-all hover:bg-primary/90 active:scale-[0.98]"
+            className="flex w-full items-center justify-between rounded-xl border border-border bg-card px-4 py-4 text-left transition-all hover:shadow-md active:scale-[0.98]"
           >
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold truncate">{c.name && c.name.trim() ? c.name : "Unnamed Client"}</p>
-              <p className="text-xs text-white/70 truncate">{c.email}</p>
+              <p className="text-sm font-semibold truncate text-foreground">{c.name && c.name.trim() ? c.name : "Unnamed Client"}</p>
+              <p className="text-xs text-muted-foreground truncate">{c.email}</p>
             </div>
             <div className="flex items-center gap-1.5 ml-2 shrink-0">
               <Button
                 size="icon"
-                className="h-8 w-8 bg-white/20 text-white hover:bg-white/30"
+                className="h-8 w-8"
                 onClick={(e) => { e.stopPropagation(); handleMessage(c.id); }}
                 title="Message"
               >
@@ -154,7 +154,8 @@ export default function CoachDashboard() {
               {showArchived ? (
                 <Button
                   size="icon"
-                  className="h-8 w-8 bg-white/20 text-white hover:bg-white/30"
+                  variant="outline"
+                  className="h-8 w-8"
                   onClick={(e) => { e.stopPropagation(); setRestoreTarget(c); }}
                   title="Restore"
                 >
@@ -163,14 +164,15 @@ export default function CoachDashboard() {
               ) : (
                 <Button
                   size="icon"
-                  className="h-8 w-8 bg-white/20 text-white hover:bg-white/30"
+                  variant="outline"
+                  className="h-8 w-8"
                   onClick={(e) => { e.stopPropagation(); setArchiveTarget(c); }}
                   title="Archive"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               )}
-              <ChevronRight className="h-4 w-4 text-white/70" />
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
             </div>
           </button>
         ))}
@@ -186,7 +188,7 @@ export default function CoachDashboard() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleArchive} className="bg-primary text-primary-foreground hover:bg-primary/90">
+            <AlertDialogAction onClick={handleArchive}>
               Archive
             </AlertDialogAction>
           </AlertDialogFooter>
