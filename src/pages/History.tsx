@@ -36,7 +36,6 @@ export default function History() {
     const rows = (data as WorkoutRow[]) || [];
     setWorkouts(rows);
 
-    // Resolve day labels from program_days
     const dayIds = [...new Set(rows.map((w) => w.day_id))];
     if (dayIds.length > 0) {
       const { data: days } = await supabase
@@ -67,11 +66,11 @@ export default function History() {
   }
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen bg-background pb-24">
       <div className="bg-gradient-to-br from-primary/20 to-accent/5 px-5 pb-8 pt-12">
         <div className="flex items-center gap-3 mb-1">
           <Clock className="h-7 w-7 text-primary" />
-          <h1 className="text-2xl font-bold tracking-tight">Workout History</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Workout History</h1>
         </div>
       </div>
 
@@ -87,16 +86,16 @@ export default function History() {
             <button
               key={w.id}
               onClick={() => navigate(`/history/${w.id}`)}
-              className="flex w-full items-center justify-between rounded-xl bg-primary text-white px-4 py-3 text-left hover:bg-primary/90 active:scale-[0.98] transition-all"
+              className="flex w-full items-center justify-between rounded-xl border border-border bg-card px-4 py-3 text-left hover:shadow-md active:scale-[0.98] transition-all"
             >
               <div>
-                <p className="text-sm font-semibold text-white">{dayLabels[w.day_id] || w.day_id}</p>
-                <p className="text-xs text-white/70">
+                <p className="text-sm font-semibold text-foreground">{dayLabels[w.day_id] || w.day_id}</p>
+                <p className="text-xs text-muted-foreground">
                   {format(new Date(w.date), "EEEE, MMM d, yyyy")}
                   {w.duration_seconds ? ` · ${formatDuration(w.duration_seconds)}` : ""}
                 </p>
               </div>
-              <ChevronRight className="h-4 w-4 text-white/70" />
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
             </button>
           ))
         )}

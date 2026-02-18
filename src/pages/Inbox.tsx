@@ -70,11 +70,11 @@ export default function Inbox() {
   }, [user, profile]);
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen bg-background pb-24">
       <div className="bg-gradient-to-br from-primary/20 to-accent/5 px-5 pb-8 pt-12">
         <div className="flex items-center gap-3 mb-1">
           <MessageSquare className="h-7 w-7 text-primary" />
-          <h1 className="text-2xl font-bold tracking-tight">Inbox</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Inbox</h1>
         </div>
       </div>
 
@@ -86,19 +86,19 @@ export default function Inbox() {
           <button
             key={c.id}
             onClick={() => navigate(`/inbox/${c.id}`)}
-            className="flex w-full items-center justify-between rounded-xl bg-primary text-white px-4 py-4 text-left transition-all hover:bg-primary/90 active:scale-[0.98]"
+            className="flex w-full items-center justify-between rounded-xl border border-border bg-card px-4 py-4 text-left transition-all hover:shadow-md active:scale-[0.98]"
           >
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <p className="text-sm font-semibold truncate text-white">{c.other_name}</p>
+                <p className="text-sm font-semibold truncate text-foreground">{c.other_name}</p>
                 {c.unread > 0 && (
-                  <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
+                  <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
                     {c.unread}
                   </span>
                 )}
               </div>
               {c.last_message && (
-                <p className="text-xs text-white/70 truncate mt-0.5">{c.last_message}</p>
+                <p className="text-xs text-muted-foreground truncate mt-0.5">{c.last_message}</p>
               )}
             </div>
           </button>
