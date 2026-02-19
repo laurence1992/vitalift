@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
+import { resolveExerciseImage } from "@/lib/exercise-image-map";
 import { useAuth } from "@/hooks/useAuth";
 
 type SetTarget = {
@@ -223,7 +224,7 @@ export default function ProgramWorkoutSession() {
 
               {ex.image_url && (
                 <div className="flex items-center justify-center rounded-lg bg-muted/30 p-2">
-                  <img src={ex.image_url} alt={ex.exercise_name} className="w-full max-h-[200px] rounded-md object-contain" />
+                  <img src={resolveExerciseImage(ex.image_url)} alt={ex.exercise_name} className="w-full max-h-[200px] rounded-md object-contain" />
                 </div>
               )}
 
