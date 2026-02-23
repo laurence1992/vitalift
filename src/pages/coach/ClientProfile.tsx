@@ -163,8 +163,7 @@ export default function ClientProfile() {
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div className="flex-1">
-          <h1 className="text-base font-bold text-foreground">{client?.name || client?.email || "Client"}</h1>
-          <p className="text-xs text-muted-foreground">{client?.email}</p>
+          <h1 className="text-base font-bold text-foreground">{client?.name && client.name.trim() ? client.name : "Unnamed Client"}</h1>
         </div>
       </div>
 
