@@ -140,7 +140,6 @@ export default function CoachDashboard() {
           >
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold truncate text-foreground">{c.name && c.name.trim() ? c.name : "Unnamed Client"}</p>
-              <p className="text-xs text-muted-foreground truncate">{c.email}</p>
             </div>
             <div className="flex items-center gap-1.5 ml-2 shrink-0">
               <Button
