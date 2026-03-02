@@ -30,7 +30,10 @@ const MUSCLE_GROUPS = ["Chest", "Back", "Shoulders", "Arms", "Core", "Legs", "Gl
 const EQUIPMENT = ["Barbell", "Dumbbell", "Cable", "Machine", "Bodyweight", "Band", "Other"];
 
 function hasValidMedia(ex: CoachExercise): boolean {
-  return !!(ex.image_url && ex.image_url.trim() !== "" && ex.video_url && ex.video_url.trim() !== "");
+  return !!(
+    (ex.image_url && ex.image_url.trim() !== "") ||
+    (ex.video_url && ex.video_url.trim() !== "")
+  );
 }
 
 export default function ExerciseLibrary({
