@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Search, Plus, Archive, RotateCcw, ExternalLink } from "lucide-react";
+import { Search, Plus, Archive, RotateCcw, ExternalLink, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,9 +23,12 @@ export type CoachExercise = {
   equipment: string;
   archived_at: string | null;
   created_at: string;
+  work_seconds: number | null;
+  rest_seconds: number | null;
+  rounds: number | null;
 };
 
-const CATEGORIES = ["Compound", "Isolation", "Bodyweight", "Cardio", "Other"];
+const CATEGORIES = ["Strength", "Cardio", "Flexibility", "Core", "Mobility", "Compound", "Isolation", "Bodyweight", "Other"];
 const MUSCLE_GROUPS = ["Chest", "Back", "Shoulders", "Arms", "Core", "Legs", "Glutes", "Full Body"];
 const EQUIPMENT = ["Barbell", "Dumbbell", "Cable", "Machine", "Bodyweight", "Band", "Other"];
 
@@ -35,6 +38,12 @@ function hasValidMedia(ex: CoachExercise): boolean {
     (ex.video_url && ex.video_url.trim() !== "")
   );
 }
+
+const emptyForm = {
+  name: "", image_url: "", video_url: "", notes: "",
+  category: "", muscle_group: "", equipment: "",
+  work_seconds: "", rest_seconds: "", rounds: "",
+};
 
 export default function ExerciseLibrary({
   onSelect,
@@ -51,13 +60,11 @@ export default function ExerciseLibrary({
   const [filterMuscle, setFilterMuscle] = useState("");
   const [filterEquipment, setFilterEquipment] = useState("");
   const [showArchived, setShowArchived] = useState(false);
-  const [addOpen, setAddOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [seeded, setSeeded] = useState(false);
 
-  const [form, setForm] = useState({
-    name: "", image_url: "", video_url: "", notes: "",
-    category: "", muscle_group: "", equipment: "",
-  });
+  const [form, setForm] = useState(emptyForm);
 
   const load = async () => {
     if (!user) return;
@@ -142,10 +149,32 @@ export default function ExerciseLibrary({
     return true;
   });
 
-  const handleAdd = async () => {
+  const openAdd = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+    setFormOpen(true);
+  };
+
+  const openEdit = (ex: CoachExercise) => {
+    setEditingId(ex.id);
+    setForm({
+      name: ex.name,
+      image_url: ex.image_url || "",
+      video_url: ex.video_url || "",
+      notes: ex.notes || "",
+      category: ex.category || "",
+      muscle_group: ex.muscle_group || "",
+      equipment: ex.equipment || "",
+      work_seconds: ex.work_seconds?.toString() || "",
+      rest_seconds: ex.rest_seconds?.toString() || "",
+      rounds: ex.rounds?.toString() || "",
+    });
+    setFormOpen(true);
+  };
+
+  const handleSave = async () => {
     if (!user || !form.name.trim()) return;
-    await supabase.from("coach_exercises").insert({
-      coach_id: user.id,
+    const payload: any = {
       name: form.name.trim(),
       image_url: form.image_url || null,
       video_url: form.video_url || null,
@@ -153,10 +182,22 @@ export default function ExerciseLibrary({
       category: form.category,
       muscle_group: form.muscle_group,
       equipment: form.equipment,
-    });
-    setForm({ name: "", image_url: "", video_url: "", notes: "", category: "", muscle_group: "", equipment: "" });
-    setAddOpen(false);
-    toast({ title: "Exercise added" });
+      work_seconds: form.work_seconds ? Number(form.work_seconds) : null,
+      rest_seconds: form.rest_seconds ? Number(form.rest_seconds) : null,
+      rounds: form.rounds ? Number(form.rounds) : null,
+    };
+
+    if (editingId) {
+      await supabase.from("coach_exercises").update(payload).eq("id", editingId);
+      toast({ title: "Exercise updated" });
+    } else {
+      await supabase.from("coach_exercises").insert({ ...payload, coach_id: user.id });
+      toast({ title: "Exercise added" });
+    }
+
+    setForm(emptyForm);
+    setEditingId(null);
+    setFormOpen(false);
     load();
   };
 
@@ -170,6 +211,8 @@ export default function ExerciseLibrary({
     }
     load();
   };
+
+  const isCardio = form.category === "Cardio";
 
   return (
     <div className="space-y-3">
@@ -186,40 +229,22 @@ export default function ExerciseLibrary({
         </div>
         {!selectable && (
           <div className="flex gap-1">
-            <Button
-              size="sm"
-              variant={!showArchived ? "default" : "outline"}
-              onClick={() => setShowArchived(false)}
-              className="text-xs"
-            >
-              Active
-            </Button>
-            <Button
-              size="sm"
-              variant={showArchived ? "default" : "outline"}
-              onClick={() => setShowArchived(true)}
-              className="text-xs"
-            >
-              Archived
-            </Button>
+            <Button size="sm" variant={!showArchived ? "default" : "outline"} onClick={() => setShowArchived(false)} className="text-xs">Active</Button>
+            <Button size="sm" variant={showArchived ? "default" : "outline"} onClick={() => setShowArchived(true)} className="text-xs">Archived</Button>
           </div>
         )}
       </div>
 
       <div className="flex gap-2">
         <Select value={filterMuscle} onValueChange={(v) => setFilterMuscle(v === "all" ? "" : v)}>
-          <SelectTrigger className="h-8 text-xs flex-1">
-            <SelectValue placeholder="Muscle Group" />
-          </SelectTrigger>
+          <SelectTrigger className="h-8 text-xs flex-1"><SelectValue placeholder="Muscle Group" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Muscles</SelectItem>
             {MUSCLE_GROUPS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={filterEquipment} onValueChange={(v) => setFilterEquipment(v === "all" ? "" : v)}>
-          <SelectTrigger className="h-8 text-xs flex-1">
-            <SelectValue placeholder="Equipment" />
-          </SelectTrigger>
+          <SelectTrigger className="h-8 text-xs flex-1"><SelectValue placeholder="Equipment" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Equipment</SelectItem>
             {EQUIPMENT.map((e) => <SelectItem key={e} value={e}>{e}</SelectItem>)}
@@ -246,18 +271,33 @@ export default function ExerciseLibrary({
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold truncate text-foreground">{ex.name}</p>
               <p className="text-xs text-muted-foreground truncate">
-                {[ex.muscle_group, ex.equipment, ex.category].filter(Boolean).join(" · ") || "Uncategorized"}
+                {[ex.category, ex.muscle_group, ex.equipment].filter(Boolean).join(" · ") || "Uncategorized"}
               </p>
+              {ex.category === "Cardio" && ex.work_seconds && ex.rounds && (
+                <p className="text-[10px] text-primary font-medium">
+                  {formatCardioInterval(ex)}
+                </p>
+              )}
             </div>
             {!selectable && (
-              <Button
-                size="icon"
-                variant="outline"
-                className="h-7 w-7 shrink-0"
-                onClick={(e) => { e.stopPropagation(); toggleArchive(ex); }}
-              >
-                {ex.archived_at ? <RotateCcw className="h-3.5 w-3.5" /> : <Archive className="h-3.5 w-3.5" />}
-              </Button>
+              <div className="flex gap-1 shrink-0">
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="h-7 w-7"
+                  onClick={(e) => { e.stopPropagation(); openEdit(ex); }}
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="h-7 w-7"
+                  onClick={(e) => { e.stopPropagation(); toggleArchive(ex); }}
+                >
+                  {ex.archived_at ? <RotateCcw className="h-3.5 w-3.5" /> : <Archive className="h-3.5 w-3.5" />}
+                </Button>
+              </div>
             )}
           </div>
         ))}
@@ -265,7 +305,7 @@ export default function ExerciseLibrary({
 
       {/* Add button */}
       {!selectable && (
-        <Button onClick={() => setAddOpen(true)} className="w-full gap-2">
+        <Button onClick={openAdd} className="w-full gap-2">
           <Plus className="h-4 w-4" /> Add Exercise
         </Button>
       )}
@@ -290,8 +330,13 @@ export default function ExerciseLibrary({
               <p className="text-sm text-muted-foreground">{detailExercise.notes}</p>
             )}
             <p className="text-xs text-muted-foreground">
-              {[detailExercise?.muscle_group, detailExercise?.equipment, detailExercise?.category].filter(Boolean).join(" · ")}
+              {[detailExercise?.category, detailExercise?.muscle_group, detailExercise?.equipment].filter(Boolean).join(" · ")}
             </p>
+            {detailExercise?.category === "Cardio" && detailExercise.work_seconds && detailExercise.rounds && (
+              <p className="text-sm font-semibold text-primary">
+                {formatCardioInterval(detailExercise)}
+              </p>
+            )}
             {detailExercise?.video_url && (() => {
               const url = detailExercise.video_url!.trim().startsWith("http")
                 ? detailExercise.video_url!.trim()
@@ -312,10 +357,10 @@ export default function ExerciseLibrary({
         </DialogContent>
       </Dialog>
 
-      {/* Add exercise dialog */}
-      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+      {/* Add/Edit exercise dialog */}
+      <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent className="max-h-[85vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Add Exercise</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editingId ? "Edit Exercise" : "Add Exercise"}</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <Input placeholder="Exercise name *" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} />
             <Input placeholder="Image URL" value={form.image_url} onChange={(e) => setForm((p) => ({ ...p, image_url: e.target.value }))} />
@@ -338,13 +383,61 @@ export default function ExerciseLibrary({
                 {EQUIPMENT.map((e) => <SelectItem key={e} value={e}>{e}</SelectItem>)}
               </SelectContent>
             </Select>
+
+            {/* Cardio timing fields */}
+            {isCardio && (
+              <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2">
+                <p className="text-xs font-semibold text-primary">Interval Timing</p>
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="text-[10px] text-muted-foreground">Work (sec)</label>
+                    <Input
+                      type="number"
+                      placeholder="120"
+                      value={form.work_seconds}
+                      onChange={(e) => setForm((p) => ({ ...p, work_seconds: e.target.value }))}
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-muted-foreground">Rest (sec)</label>
+                    <Input
+                      type="number"
+                      placeholder="60"
+                      value={form.rest_seconds}
+                      onChange={(e) => setForm((p) => ({ ...p, rest_seconds: e.target.value }))}
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-muted-foreground">Rounds</label>
+                    <Input
+                      type="number"
+                      placeholder="3"
+                      value={form.rounds}
+                      onChange={(e) => setForm((p) => ({ ...p, rounds: e.target.value }))}
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
             <Textarea placeholder="Notes" value={form.notes} onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))} />
-            <Button onClick={handleAdd} disabled={!form.name.trim()} className="w-full">
-              Add Exercise
+            <Button onClick={handleSave} disabled={!form.name.trim()} className="w-full">
+              {editingId ? "Save Changes" : "Add Exercise"}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
     </div>
   );
+}
+
+export function formatCardioInterval(ex: { work_seconds?: number | null; rest_seconds?: number | null; rounds?: number | null }): string {
+  const work = ex.work_seconds || 0;
+  const rest = ex.rest_seconds || 0;
+  const rounds = ex.rounds || 1;
+  const fmtTime = (s: number) => s >= 60 ? `${Math.floor(s / 60)} min${s % 60 ? ` ${s % 60}s` : ""}` : `${s}s`;
+  return `${fmtTime(work)} on / ${fmtTime(rest)} off × ${rounds} rounds`;
 }

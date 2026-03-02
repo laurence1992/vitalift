@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, ExternalLink, Check, Trophy } from "lucide-react";
+import { ArrowLeft, ExternalLink, Check, Trophy, Timer } from "lucide-react";
+import { formatCardioInterval } from "@/pages/coach/ExerciseLibrary";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -22,12 +23,16 @@ type ExerciseData = {
   exercise_name: string;
   image_url: string | null;
   video_url: string | null;
+  category: string;
   target_sets: number;
   target_reps: string;
   target_weight: number | null;
   rest_seconds: number | null;
   coach_notes: string;
   sets: SetTarget[];
+  work_seconds: number | null;
+  cardio_rest_seconds: number | null;
+  rounds: number | null;
 };
 
 type SetLog = {
@@ -70,7 +75,7 @@ export default function ProgramWorkoutSession() {
 
     const { data: peData } = await supabase
       .from("program_exercises")
-      .select("*, coach_exercises(name, image_url, video_url)")
+      .select("*, coach_exercises(name, image_url, video_url, category, work_seconds, rest_seconds, rounds)")
       .eq("program_day_id", dayId)
       .order("sort_order");
 
@@ -99,18 +104,23 @@ export default function ProgramWorkoutSession() {
         }
       }
 
+      const ceData = (pe as any).coach_exercises;
       const ex: ExerciseData = {
         id: pe.id,
         exercise_id: pe.exercise_id,
-        exercise_name: (pe as any).coach_exercises?.name || "Unknown",
-        image_url: (pe as any).coach_exercises?.image_url || null,
-        video_url: (pe as any).coach_exercises?.video_url || null,
+        exercise_name: ceData?.name || "Unknown",
+        image_url: ceData?.image_url || null,
+        video_url: ceData?.video_url || null,
+        category: ceData?.category || "",
         target_sets: pe.target_sets,
         target_reps: pe.target_reps || "",
         target_weight: pe.target_weight,
         rest_seconds: pe.rest_seconds,
         coach_notes: pe.coach_notes || "",
         sets,
+        work_seconds: ceData?.work_seconds || null,
+        cardio_rest_seconds: ceData?.rest_seconds || null,
+        rounds: ceData?.rounds || null,
       };
       exList.push(ex);
 
@@ -240,57 +250,71 @@ export default function ProgramWorkoutSession() {
                 </a>
               )}
 
-              <p className="text-xs text-muted-foreground">
-                Target: {ex.target_sets} × {ex.target_reps}
-                {ex.target_weight ? ` @ ${ex.target_weight}kg` : ""}
-                {ex.rest_seconds ? ` · ${ex.rest_seconds}s rest` : ""}
-              </p>
-
-              {/* Set inputs */}
-              <div className="space-y-2">
-                <div className="grid grid-cols-[40px_1fr_1fr] gap-2 text-xs font-semibold text-muted-foreground px-1">
-                  <span>Set</span>
-                  <span>Weight (kg)</span>
-                  <span>Reps</span>
+              {ex.category === "Cardio" && ex.work_seconds ? (
+                /* Cardio interval display */
+                <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2">
+                  <div className="flex items-center gap-2 text-primary">
+                    <Timer className="h-4 w-4" />
+                    <p className="text-sm font-semibold">
+                      {formatCardioInterval({ work_seconds: ex.work_seconds, rest_seconds: ex.cardio_rest_seconds, rounds: ex.rounds })}
+                    </p>
+                  </div>
                 </div>
-                {sets.map((set, i) => {
-                  const setTarget = ex.sets[i];
-                  return (
-                    <div key={i}>
-                      <div className="grid grid-cols-[40px_1fr_1fr] gap-2 items-center">
-                        <span className="text-center text-sm font-bold text-muted-foreground">{set.set_index}</span>
-                        <Input
-                          type="number"
-                          inputMode="decimal"
-                          placeholder={setTarget?.target_weight?.toString() || "0"}
-                          value={set.weight ?? ""}
-                          onChange={(e) => updateSet(ex.id, i, "weight", e.target.value)}
-                          className="h-10 bg-background text-center text-foreground caret-foreground [&]:[-webkit-text-fill-color:hsl(var(--foreground))] placeholder:text-muted-foreground placeholder:[-webkit-text-fill-color:hsl(var(--muted-foreground))]"
-                        />
-                        <Input
-                          type="number"
-                          inputMode="numeric"
-                          placeholder={setTarget?.target_reps || "0"}
-                          value={set.reps ?? ""}
-                          onChange={(e) => updateSet(ex.id, i, "reps", e.target.value)}
-                          className="h-10 bg-background text-center text-foreground caret-foreground [&]:[-webkit-text-fill-color:hsl(var(--foreground))] placeholder:text-muted-foreground placeholder:[-webkit-text-fill-color:hsl(var(--muted-foreground))]"
-                        />
-                      </div>
-                      {/* Per-set coach note */}
-                      {setTarget?.coach_note && (
-                        <p className="text-[10px] text-primary/70 italic ml-[48px] mt-0.5">
-                          💬 {setTarget.coach_note}
-                        </p>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+              ) : (
+                /* Standard strength display */
+                <>
+                  <p className="text-xs text-muted-foreground">
+                    Target: {ex.target_sets} × {ex.target_reps}
+                    {ex.target_weight ? ` @ ${ex.target_weight}kg` : ""}
+                    {ex.rest_seconds ? ` · ${ex.rest_seconds}s rest` : ""}
+                  </p>
 
-              {exVolume > 0 && (
-                <p className="text-xs text-muted-foreground text-right">
-                  Volume: {exVolume.toLocaleString()} kg
-                </p>
+                  {/* Set inputs */}
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-[40px_1fr_1fr] gap-2 text-xs font-semibold text-muted-foreground px-1">
+                      <span>Set</span>
+                      <span>Weight (kg)</span>
+                      <span>Reps</span>
+                    </div>
+                    {sets.map((set, i) => {
+                      const setTarget = ex.sets[i];
+                      return (
+                        <div key={i}>
+                          <div className="grid grid-cols-[40px_1fr_1fr] gap-2 items-center">
+                            <span className="text-center text-sm font-bold text-muted-foreground">{set.set_index}</span>
+                            <Input
+                              type="number"
+                              inputMode="decimal"
+                              placeholder={setTarget?.target_weight?.toString() || "0"}
+                              value={set.weight ?? ""}
+                              onChange={(e) => updateSet(ex.id, i, "weight", e.target.value)}
+                              className="h-10 bg-background text-center text-foreground caret-foreground [&]:[-webkit-text-fill-color:hsl(var(--foreground))] placeholder:text-muted-foreground placeholder:[-webkit-text-fill-color:hsl(var(--muted-foreground))]"
+                            />
+                            <Input
+                              type="number"
+                              inputMode="numeric"
+                              placeholder={setTarget?.target_reps || "0"}
+                              value={set.reps ?? ""}
+                              onChange={(e) => updateSet(ex.id, i, "reps", e.target.value)}
+                              className="h-10 bg-background text-center text-foreground caret-foreground [&]:[-webkit-text-fill-color:hsl(var(--foreground))] placeholder:text-muted-foreground placeholder:[-webkit-text-fill-color:hsl(var(--muted-foreground))]"
+                            />
+                          </div>
+                          {setTarget?.coach_note && (
+                            <p className="text-[10px] text-primary/70 italic ml-[48px] mt-0.5">
+                              💬 {setTarget.coach_note}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {exVolume > 0 && (
+                    <p className="text-xs text-muted-foreground text-right">
+                      Volume: {exVolume.toLocaleString()} kg
+                    </p>
+                  )}
+                </>
               )}
             </div>
           );

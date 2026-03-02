@@ -65,8 +65,11 @@ export type Database = {
           muscle_group: string | null
           name: string
           notes: string | null
+          rest_seconds: number | null
+          rounds: number | null
           updated_at: string
           video_url: string | null
+          work_seconds: number | null
         }
         Insert: {
           archived_at?: string | null
@@ -79,8 +82,11 @@ export type Database = {
           muscle_group?: string | null
           name: string
           notes?: string | null
+          rest_seconds?: number | null
+          rounds?: number | null
           updated_at?: string
           video_url?: string | null
+          work_seconds?: number | null
         }
         Update: {
           archived_at?: string | null
@@ -93,8 +99,11 @@ export type Database = {
           muscle_group?: string | null
           name?: string
           notes?: string | null
+          rest_seconds?: number | null
+          rounds?: number | null
           updated_at?: string
           video_url?: string | null
+          work_seconds?: number | null
         }
         Relationships: [
           {
