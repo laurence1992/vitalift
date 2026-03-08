@@ -237,14 +237,14 @@ export default function ExerciseLibrary({
 
       <div className="flex gap-2">
         <Select value={filterMuscle} onValueChange={(v) => setFilterMuscle(v === "all" ? "" : v)}>
-          <SelectTrigger className="h-8 text-xs flex-1"><SelectValue placeholder="Muscle Group" /></SelectTrigger>
+          <SelectTrigger className="h-8 text-xs flex-1 text-foreground"><SelectValue placeholder="Muscle Group" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Muscles</SelectItem>
             {MUSCLE_GROUPS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={filterEquipment} onValueChange={(v) => setFilterEquipment(v === "all" ? "" : v)}>
-          <SelectTrigger className="h-8 text-xs flex-1"><SelectValue placeholder="Equipment" /></SelectTrigger>
+          <SelectTrigger className="h-8 text-xs flex-1 text-foreground"><SelectValue placeholder="Equipment" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Equipment</SelectItem>
             {EQUIPMENT.map((e) => <SelectItem key={e} value={e}>{e}</SelectItem>)}
