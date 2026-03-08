@@ -15,9 +15,6 @@ export default function UpdatePassword() {
   const [ready, setReady] = useState(false);
   const navigate = useNavigate();
 
-  const inputClass =
-    "bg-white text-black placeholder:text-gray-500 caret-black [&]:[-webkit-text-fill-color:black]";
-
   useEffect(() => {
     const hash = window.location.hash;
     const params = new URLSearchParams(window.location.search);
@@ -36,7 +33,6 @@ export default function UpdatePassword() {
       return;
     }
 
-    // Extract tokens from hash fragment and establish session
     const accessToken = hp.get("access_token");
     const refreshToken = hp.get("refresh_token");
 
@@ -56,7 +52,6 @@ export default function UpdatePassword() {
       return;
     }
 
-    // Fallback: listen for PASSWORD_RECOVERY event
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event) => {
         if (event === "PASSWORD_RECOVERY") {
@@ -86,11 +81,11 @@ export default function UpdatePassword() {
 
   if (expired) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-4">
+      <div className="flex min-h-screen items-center justify-center px-5 bg-background">
         <div className="w-full max-w-sm space-y-6 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
             <Dumbbell className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold text-primary">VitaLift</h1>
+            <h1 className="text-xl font-bold tracking-tight text-foreground">VitaLift</h1>
           </div>
           <p className="text-muted-foreground">
             This reset link has expired. Please request a new one.
@@ -143,14 +138,14 @@ export default function UpdatePassword() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
+    <div className="flex min-h-screen items-center justify-center px-5 bg-background">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
             <Dumbbell className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold text-primary">VitaLift</h1>
+            <h1 className="text-xl font-bold tracking-tight text-foreground">VitaLift</h1>
           </div>
-          <p className="text-muted-foreground text-sm">Set your new password</p>
+          <p className="text-muted-foreground text-xs">Set your new password</p>
         </div>
         {!ready ? (
           <div className="flex justify-center py-8">
@@ -165,7 +160,6 @@ export default function UpdatePassword() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              className={inputClass}
             />
             <Input
               type="password"
@@ -174,10 +168,9 @@ export default function UpdatePassword() {
               onChange={(e) => setConfirm(e.target.value)}
               required
               minLength={6}
-              className={inputClass}
             />
             {error && <p className="text-sm text-destructive font-medium">{error}</p>}
-            {message && <p className="text-sm text-green-500 font-medium">{message}</p>}
+            {message && <p className="text-sm text-accent font-medium">{message}</p>}
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Updating..." : "Update Password"}
             </Button>

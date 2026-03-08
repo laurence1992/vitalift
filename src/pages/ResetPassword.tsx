@@ -34,14 +34,14 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
+    <div className="flex min-h-screen items-center justify-center px-5 bg-background">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
             <Dumbbell className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold text-primary">VitaLift</h1>
+            <h1 className="text-xl font-bold tracking-tight text-foreground">VitaLift</h1>
           </div>
-          <p className="text-muted-foreground text-sm">Reset your password</p>
+          <p className="text-muted-foreground text-xs">Reset your password</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
@@ -50,10 +50,9 @@ export default function ResetPassword() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="bg-white text-black placeholder:text-gray-500 caret-black [&]:[-webkit-text-fill-color:black]"
           />
           {error && <p className="text-sm text-destructive font-medium">{error}</p>}
-          {message && <p className="text-sm text-green-500 font-medium">{message}</p>}
+          {message && <p className="text-sm text-accent font-medium">{message}</p>}
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Sending..." : "Send Reset Link"}
           </Button>

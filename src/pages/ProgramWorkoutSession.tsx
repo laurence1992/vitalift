@@ -97,7 +97,6 @@ export default function ProgramWorkoutSession() {
         coach_note: s.coach_note || "",
       }));
 
-      // If no per-set data, generate from exercise-level targets
       if (sets.length === 0) {
         for (let i = 1; i <= pe.target_sets; i++) {
           sets.push({ set_index: i, target_reps: null, target_weight: null, rest_seconds: null, coach_note: "" });
@@ -194,28 +193,28 @@ export default function ProgramWorkoutSession() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen pb-8">
+    <div className="min-h-screen bg-background pb-8">
       {/* Top bar */}
-      <div className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-background/95 backdrop-blur-md px-4 py-3">
-        <button onClick={() => navigate("/")} className="text-muted-foreground">
+      <div className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-background px-5 py-3">
+        <button onClick={() => navigate("/")} className="text-foreground active:scale-[0.97]">
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div className="flex-1">
-          <h1 className="text-base font-bold">{dayLabel}</h1>
+          <h1 className="text-sm font-bold text-foreground">{dayLabel}</h1>
           <p className="text-xs text-muted-foreground">{exercises.length} exercises</p>
         </div>
       </div>
 
-      <div className="space-y-4 px-4 pt-4">
+      <div className="space-y-4 px-5 pt-4">
         {dayNote && (
-          <p className="text-xs text-primary/80 italic text-center rounded-lg bg-primary/5 px-3 py-2">
+          <p className="text-xs text-primary italic text-center rounded-2xl bg-primary/5 border border-primary/20 px-3 py-2">
             {dayNote}
           </p>
         )}
@@ -225,16 +224,16 @@ export default function ProgramWorkoutSession() {
           const exVolume = sets.reduce((s, set) => s + (set.weight ?? 0) * (set.reps ?? 0), 0);
 
           return (
-            <div key={ex.id} className="rounded-xl border border-border bg-card overflow-hidden p-4 space-y-3">
-              <h3 className="text-lg font-bold text-foreground">{ex.exercise_name}</h3>
+            <div key={ex.id} className="rounded-2xl border border-border bg-card overflow-hidden p-4 space-y-3">
+              <h3 className="text-sm font-semibold text-foreground">{ex.exercise_name}</h3>
 
               {ex.coach_notes && (
-                <p className="text-xs text-primary/80 bg-primary/5 rounded-lg px-2 py-1">{ex.coach_notes}</p>
+                <p className="text-xs text-primary bg-primary/5 border border-primary/20 rounded-xl px-2 py-1">{ex.coach_notes}</p>
               )}
 
               {ex.image_url && (
-                <div className="flex items-center justify-center rounded-lg bg-muted/30 p-2">
-                  <img src={resolveExerciseImage(ex.image_url)} alt={ex.exercise_name} className="w-full max-h-[200px] rounded-md object-contain" />
+                <div className="flex items-center justify-center rounded-xl bg-secondary p-2">
+                  <img src={resolveExerciseImage(ex.image_url)} alt={ex.exercise_name} className="w-full max-h-[200px] rounded-xl object-contain" />
                 </div>
               )}
 
@@ -243,7 +242,7 @@ export default function ProgramWorkoutSession() {
                   href={ex.video_url.trim().startsWith("http") ? ex.video_url.trim() : `https://${ex.video_url.trim()}`}
                   target="_self"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground no-underline"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground no-underline active:scale-[0.97]"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
                   Watch Demo
@@ -251,8 +250,7 @@ export default function ProgramWorkoutSession() {
               )}
 
               {ex.category === "Cardio" && ex.work_seconds ? (
-                /* Cardio interval display */
-                <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2">
+                <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 space-y-2">
                   <div className="flex items-center gap-2 text-primary">
                     <Timer className="h-4 w-4" />
                     <p className="text-sm font-semibold">
@@ -261,7 +259,6 @@ export default function ProgramWorkoutSession() {
                   </div>
                 </div>
               ) : (
-                /* Standard strength display */
                 <>
                   <p className="text-xs text-muted-foreground">
                     Target: {ex.target_sets} × {ex.target_reps}
@@ -269,9 +266,8 @@ export default function ProgramWorkoutSession() {
                     {ex.rest_seconds ? ` · ${ex.rest_seconds}s rest` : ""}
                   </p>
 
-                  {/* Set inputs */}
                   <div className="space-y-2">
-                    <div className="grid grid-cols-[40px_1fr_1fr] gap-2 text-xs font-semibold text-muted-foreground px-1">
+                    <div className="grid grid-cols-[40px_1fr_1fr] gap-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1">
                       <span>Set</span>
                       <span>Weight (kg)</span>
                       <span>Reps</span>
@@ -288,7 +284,7 @@ export default function ProgramWorkoutSession() {
                               placeholder={setTarget?.target_weight?.toString() || "0"}
                               value={set.weight ?? ""}
                               onChange={(e) => updateSet(ex.id, i, "weight", e.target.value)}
-                              className="h-10 bg-background text-center text-foreground caret-foreground [&]:[-webkit-text-fill-color:hsl(var(--foreground))] placeholder:text-muted-foreground placeholder:[-webkit-text-fill-color:hsl(var(--muted-foreground))]"
+                              className="h-10 text-center"
                             />
                             <Input
                               type="number"
@@ -296,11 +292,11 @@ export default function ProgramWorkoutSession() {
                               placeholder={setTarget?.target_reps || "0"}
                               value={set.reps ?? ""}
                               onChange={(e) => updateSet(ex.id, i, "reps", e.target.value)}
-                              className="h-10 bg-background text-center text-foreground caret-foreground [&]:[-webkit-text-fill-color:hsl(var(--foreground))] placeholder:text-muted-foreground placeholder:[-webkit-text-fill-color:hsl(var(--muted-foreground))]"
+                              className="h-10 text-center"
                             />
                           </div>
                           {setTarget?.coach_note && (
-                            <p className="text-[10px] text-primary/70 italic ml-[48px] mt-0.5">
+                            <p className="text-[10px] text-primary italic ml-[48px] mt-0.5">
                               💬 {setTarget.coach_note}
                             </p>
                           )}
@@ -320,21 +316,20 @@ export default function ProgramWorkoutSession() {
           );
         })}
 
-        {/* Session notes */}
-        <div className="rounded-xl border border-border bg-card p-4">
-          <label className="mb-2 block text-sm font-medium">Session Notes</label>
+        <div className="rounded-2xl border border-border bg-card p-4">
+          <label className="mb-2 block text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Session Notes</label>
           <Textarea
             value={sessionNotes}
             onChange={(e) => setSessionNotes(e.target.value)}
             placeholder="How did it feel? Any PRs?"
-            className="min-h-[80px] bg-background"
+            className="min-h-[80px]"
           />
         </div>
 
         {totalVolume > 0 && (
-          <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-center">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Total Volume</p>
-            <p className="text-2xl font-bold text-primary">{totalVolume.toLocaleString()} kg</p>
+          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-center">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Total Volume</p>
+            <p className="text-3xl font-bold text-primary">{totalVolume.toLocaleString()} kg</p>
           </div>
         )}
 

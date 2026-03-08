@@ -66,7 +66,6 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
   const [targetDayIdx, setTargetDayIdx] = useState(0);
   const [deleteDayIdx, setDeleteDayIdx] = useState<number | null>(null);
 
-  // Load existing program
   useEffect(() => {
     if (!programId) {
       setDays([
@@ -205,7 +204,6 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
       const exercises = [...day.exercises];
       const ex = { ...exercises[exIdx], [field]: value };
 
-      // Sync sets array length with target_sets
       if (field === "target_sets") {
         const numSets = Number(value) || 1;
         const currentSets = [...ex.sets];
@@ -277,12 +275,9 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
       let pid = programId;
 
       if (pid) {
-        // Update existing program
         await supabase.from("programs").update({ name, description, updated_at: new Date().toISOString() } as any).eq("id", pid);
-        // Delete existing days (cascade deletes exercises and sets)
         await supabase.from("program_days").delete().eq("program_id", pid);
       } else {
-        // Create new program
         const { data: newProg } = await supabase
           .from("programs")
           .insert({ coach_id: user.id, name, description })
@@ -291,8 +286,6 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
         if (!newProg) throw new Error("Failed to create program");
         pid = newProg.id;
 
-        // Assign to client
-        // Deactivate existing assignments
         await supabase
           .from("client_program_assignments")
           .update({ is_active: false } as any)
@@ -306,7 +299,6 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
         });
       }
 
-      // Insert days, exercises, sets
       for (const day of days) {
         const { data: dayRow } = await supabase
           .from("program_days")
@@ -364,30 +356,23 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
     }
   };
 
-  const inputCls = "bg-white text-black caret-black placeholder:text-gray-400";
-  const inputStyle = { WebkitTextFillColor: "#000" } as React.CSSProperties;
-
   return (
     <div className="space-y-4">
-      {/* Program meta */}
       <Input
         placeholder="Program Name *"
         value={name}
         onChange={(e) => setName(e.target.value)}
-        className={`font-semibold ${inputCls}`}
-        style={inputStyle}
+        className="font-semibold"
       />
       <Textarea
         placeholder="Description (optional)"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-        className={`min-h-[60px] ${inputCls}`}
-        style={inputStyle}
+        className="min-h-[60px]"
       />
 
-      {/* Days */}
       {days.map((day, dayIdx) => (
-        <div key={dayIdx} className="rounded-xl border border-border bg-card p-3 space-y-3">
+        <div key={dayIdx} className="rounded-2xl border border-border bg-card p-4 space-y-3">
           <div className="flex items-center gap-2">
             <Input
               value={day.label}
@@ -396,8 +381,7 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
                 updated[dayIdx] = { ...updated[dayIdx], label: e.target.value };
                 setDays(updated);
               }}
-              className={`h-8 text-sm font-semibold flex-1 ${inputCls}`}
-              style={inputStyle}
+              className="h-8 text-sm font-semibold flex-1"
             />
             <Input
               placeholder="Day note"
@@ -407,13 +391,12 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
                 updated[dayIdx] = { ...updated[dayIdx], day_note: e.target.value };
                 setDays(updated);
               }}
-              className={`h-8 text-xs flex-1 ${inputCls}`}
-              style={inputStyle}
+              className="h-8 text-xs flex-1"
             />
             <Button
               size="icon"
-              variant="outline"
-              className="h-8 w-8 shrink-0 border-border text-destructive hover:bg-destructive/10"
+              variant="destructive"
+              className="h-8 w-8 shrink-0"
               onClick={() => setDeleteDayIdx(dayIdx)}
               title="Delete day"
             >
@@ -421,18 +404,16 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
             </Button>
           </div>
 
-          {/* Exercises in this day */}
           {day.exercises.map((ex, exIdx) => (
-            <div key={exIdx} className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
+            <div key={exIdx} className="rounded-xl border border-border bg-secondary p-3 space-y-2">
               <div className="flex items-center gap-2">
                 <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
                 <p className="text-sm font-semibold text-foreground flex-1 truncate">{ex.exercise_name}</p>
-                <Button size="icon" variant="outline" className="h-6 w-6 border-border text-foreground" onClick={() => moveExercise(dayIdx, exIdx, -1)}><ChevronUp className="h-3 w-3" /></Button>
-                <Button size="icon" variant="outline" className="h-6 w-6 border-border text-foreground" onClick={() => moveExercise(dayIdx, exIdx, 1)}><ChevronDown className="h-3 w-3" /></Button>
-                <Button size="icon" variant="outline" className="h-6 w-6 border-border text-destructive" onClick={() => removeExercise(dayIdx, exIdx)}><Trash2 className="h-3 w-3" /></Button>
+                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => moveExercise(dayIdx, exIdx, -1)}><ChevronUp className="h-3 w-3" /></Button>
+                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => moveExercise(dayIdx, exIdx, 1)}><ChevronDown className="h-3 w-3" /></Button>
+                <Button size="icon" variant="destructive" className="h-6 w-6" onClick={() => removeExercise(dayIdx, exIdx)}><Trash2 className="h-3 w-3" /></Button>
               </div>
 
-              {/* Exercise-level targets */}
               <div className="grid grid-cols-4 gap-2">
                 <div>
                   <label className="text-[10px] text-muted-foreground">Sets</label>
@@ -440,8 +421,7 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
                     type="number"
                     value={ex.target_sets}
                     onChange={(e) => updateExercise(dayIdx, exIdx, "target_sets", Number(e.target.value) || 1)}
-                    className={`h-7 text-xs text-center ${inputCls}`}
-                    style={inputStyle}
+                    className="h-7 text-xs text-center"
                   />
                 </div>
                 <div>
@@ -449,8 +429,7 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
                   <Input
                     value={ex.target_reps}
                     onChange={(e) => updateExercise(dayIdx, exIdx, "target_reps", e.target.value)}
-                    className={`h-7 text-xs text-center ${inputCls}`}
-                    style={inputStyle}
+                    className="h-7 text-xs text-center"
                   />
                 </div>
                 <div>
@@ -458,9 +437,8 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
                   <Input
                     value={ex.target_weight}
                     onChange={(e) => updateExercise(dayIdx, exIdx, "target_weight", e.target.value)}
-                    className={`h-7 text-xs text-center ${inputCls}`}
+                    className="h-7 text-xs text-center"
                     placeholder="kg"
-                    style={inputStyle}
                   />
                 </div>
                 <div>
@@ -468,8 +446,7 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
                   <Input
                     value={ex.rest_seconds}
                     onChange={(e) => updateExercise(dayIdx, exIdx, "rest_seconds", e.target.value)}
-                    className={`h-7 text-xs text-center ${inputCls}`}
-                    style={inputStyle}
+                    className="h-7 text-xs text-center"
                   />
                 </div>
               </div>
@@ -478,13 +455,11 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
                 placeholder="Coach notes for exercise"
                 value={ex.coach_notes}
                 onChange={(e) => updateExercise(dayIdx, exIdx, "coach_notes", e.target.value)}
-                className={`h-7 text-xs ${inputCls}`}
-                style={inputStyle}
+                className="h-7 text-xs"
               />
 
-              {/* Per-set details */}
               <div className="space-y-1.5">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Per-Set Details</p>
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Per-Set Details</p>
                 {ex.sets.map((s, setIdx) => (
                   <div key={setIdx} className="grid grid-cols-[30px_1fr_1fr_1fr_2fr] gap-1.5 items-center">
                     <span className="text-[10px] font-bold text-muted-foreground text-center">{s.set_index}</span>
@@ -492,29 +467,25 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
                       placeholder="Reps"
                       value={s.target_reps}
                       onChange={(e) => updateSet(dayIdx, exIdx, setIdx, "target_reps", e.target.value)}
-                      className={`h-6 text-[10px] text-center ${inputCls}`}
-                      style={inputStyle}
+                      className="h-6 text-[10px] text-center"
                     />
                     <Input
                       placeholder="kg"
                       value={s.target_weight}
                       onChange={(e) => updateSet(dayIdx, exIdx, setIdx, "target_weight", e.target.value)}
-                      className={`h-6 text-[10px] text-center ${inputCls}`}
-                      style={inputStyle}
+                      className="h-6 text-[10px] text-center"
                     />
                     <Input
                       placeholder="Rest"
                       value={s.rest_seconds}
                       onChange={(e) => updateSet(dayIdx, exIdx, setIdx, "rest_seconds", e.target.value)}
-                      className={`h-6 text-[10px] text-center ${inputCls}`}
-                      style={inputStyle}
+                      className="h-6 text-[10px] text-center"
                     />
                     <Input
                       placeholder="Coach note for this set"
                       value={s.coach_note}
                       onChange={(e) => updateSet(dayIdx, exIdx, setIdx, "coach_note", e.target.value)}
-                      className={`h-6 text-[10px] ${inputCls}`}
-                      style={inputStyle}
+                      className="h-6 text-[10px]"
                     />
                   </div>
                 ))}
@@ -536,11 +507,10 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
         <Plus className="h-4 w-4" /> Add Day
       </Button>
 
-      <Button onClick={handleSave} disabled={saving} className="w-full h-11 text-base font-semibold disabled:opacity-60">
+      <Button onClick={handleSave} disabled={saving} className="w-full h-12 text-base font-semibold disabled:opacity-60">
         {saving ? "Saving..." : "Save Program"}
       </Button>
 
-      {/* Exercise picker dialog */}
       <Dialog open={exercisePickerOpen} onOpenChange={setExercisePickerOpen}>
         <DialogContent className="max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Select Exercise</DialogTitle></DialogHeader>
@@ -548,7 +518,6 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
         </DialogContent>
       </Dialog>
 
-      {/* Delete day confirmation */}
       <AlertDialog open={deleteDayIdx !== null} onOpenChange={() => setDeleteDayIdx(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>

@@ -8,9 +8,6 @@ import { Link, useNavigate } from "react-router-dom";
 
 const COACH_EMAILS = ["larry92roche@gmail.com"];
 
-const inputClass =
-  "bg-white text-black placeholder:text-gray-500 caret-black [&]:[-webkit-text-fill-color:black]";
-
 async function enforceCoachRole(userId: string) {
   const { error } = await supabase
     .from("profiles")
@@ -51,7 +48,6 @@ export default function Auth() {
           console.error("Sign in error:", error);
           setError(error.message);
         } else if (data.user) {
-          // Enforce coach role if email matches
           if (COACH_EMAILS.includes(email.toLowerCase())) {
             await enforceCoachRole(data.user.id);
           }
@@ -73,7 +69,6 @@ export default function Auth() {
           setMessage("Check your email for a confirmation link, then sign in.");
           toast({ title: "Account created!", description: "Please confirm your email." });
         } else if (data.session && data.user) {
-          // Enforce coach role if email matches
           if (COACH_EMAILS.includes(email.toLowerCase())) {
             await enforceCoachRole(data.user.id);
           }
@@ -104,7 +99,6 @@ export default function Auth() {
       }
       await enforceCoachRole(user.id);
       toast({ title: "Coach access restored!" });
-      // Force profile refetch by navigating
       navigate("/");
       window.location.reload();
     } catch (err: any) {
@@ -115,14 +109,14 @@ export default function Auth() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
+    <div className="flex min-h-screen items-center justify-center px-5 bg-background">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
             <Dumbbell className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold text-primary">VitaLift</h1>
+            <h1 className="text-xl font-bold tracking-tight text-foreground">VitaLift</h1>
           </div>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-xs">
             {isLogin ? "Sign in to your account" : "Create your account"}
           </p>
         </div>
@@ -134,7 +128,6 @@ export default function Auth() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className={inputClass}
             />
           )}
           <Input
@@ -143,7 +136,6 @@ export default function Auth() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className={inputClass}
           />
           <Input
             type="password"
@@ -152,7 +144,6 @@ export default function Auth() {
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={6}
-            className={inputClass}
           />
           {!isLogin && (
             <Input
@@ -162,12 +153,11 @@ export default function Auth() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               minLength={6}
-              className={inputClass}
             />
           )}
 
           {error && <p className="text-sm text-destructive font-medium">{error}</p>}
-          {message && <p className="text-sm text-green-500 font-medium">{message}</p>}
+          {message && <p className="text-sm text-accent font-medium">{message}</p>}
 
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Loading..." : isLogin ? "Sign In" : "Sign Up"}
@@ -195,8 +185,7 @@ export default function Auth() {
           </button>
         </p>
 
-        {/* Coach access fallback */}
-        <div className="text-center pt-2 border-t border-muted">
+        <div className="text-center pt-2 border-t border-border">
           <button
             onClick={handleFixCoachAccess}
             disabled={fixingCoach}

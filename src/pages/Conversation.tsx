@@ -25,17 +25,17 @@ function MessageBubble({ msg, isMine, onEnlarge, onRetry }: { msg: Message; isMi
 
   return (
     <div className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
-      <div className={`max-w-[75%] rounded-xl px-3 py-2 shadow-sm ${isMine ? "bg-primary text-primary-foreground" : "bg-card text-foreground border border-border"}`}>
+      <div className={`max-w-[75%] rounded-2xl px-3 py-2 ${isMine ? "bg-primary text-primary-foreground" : "bg-card text-foreground border border-border"}`}>
         {msg.media_type === "image" && signedUrl && (
           <img
             src={signedUrl}
             alt="Photo"
-            className="rounded-lg max-h-[200px] cursor-pointer"
+            className="rounded-xl max-h-[200px] cursor-pointer"
             onClick={() => onEnlarge(msg.media_url!)}
           />
         )}
         {msg.media_type === "video" && signedUrl && (
-          <video src={signedUrl} controls className="rounded-lg max-h-[200px]" />
+          <video src={signedUrl} controls className="rounded-xl max-h-[200px]" />
         )}
         {msg.body && <p className="text-sm whitespace-pre-wrap">{msg.body}</p>}
         <div className="flex items-center gap-1.5 mt-1">
@@ -43,7 +43,7 @@ function MessageBubble({ msg, isMine, onEnlarge, onRetry }: { msg: Message; isMi
             {msg._pending ? "Sending..." : msg._failed ? "Failed" : format(new Date(msg.created_at), "HH:mm")}
           </p>
           {msg._failed && onRetry && (
-            <button onClick={onRetry} className="text-[10px] underline text-destructive-foreground">
+            <button onClick={onRetry} className="text-[10px] underline text-destructive">
               Retry
             </button>
           )}
@@ -62,7 +62,7 @@ function EnlargedImageOverlay({ mediaUrl, onClose }: { mediaUrl: string; onClose
       className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
       onClick={onClose}
     >
-      <img src={signedUrl} alt="Enlarged" className="max-w-[90vw] max-h-[90vh] rounded-lg" />
+      <img src={signedUrl} alt="Enlarged" className="max-w-[90vw] max-h-[90vh] rounded-xl" />
     </div>
   );
 }
@@ -83,7 +83,6 @@ export default function Conversation() {
   useEffect(() => {
     if (!conversationId || !user) return;
 
-    // Load conversation partner name
     supabase.from("conversations").select("*").eq("id", conversationId).maybeSingle()
       .then(async ({ data: convo }) => {
         if (!convo) return;
@@ -92,7 +91,6 @@ export default function Conversation() {
         setOtherName(p?.name || p?.email || "Chat");
       });
 
-    // Load messages
     const loadMessages = async () => {
       const { data } = await supabase
         .from("messages")
@@ -101,7 +99,6 @@ export default function Conversation() {
         .order("created_at", { ascending: true });
       setMessages((data as Message[]) || []);
 
-      // Mark as read
       await supabase
         .from("messages")
         .update({ read_at: new Date().toISOString() })
@@ -121,18 +118,15 @@ export default function Conversation() {
       }, (payload) => {
         const newMsg = payload.new as Message;
         setMessages((prev) => {
-          // If this message was sent by us (optimistic), replace the pending one
           const pendingIdx = prev.findIndex((m) => m._pending && m.sender_user_id === newMsg.sender_user_id && m.body === newMsg.body);
           if (pendingIdx !== -1) {
             const updated = [...prev];
             updated[pendingIdx] = newMsg;
             return updated;
           }
-          // Otherwise just append if not already present
           if (prev.some((m) => m.id === newMsg.id)) return prev;
           return [...prev, newMsg];
         });
-        // Auto-mark read if not sender
         if (newMsg.sender_user_id !== user.id) {
           supabase.from("messages").update({ read_at: new Date().toISOString() }).eq("id", newMsg.id);
         }
@@ -152,7 +146,6 @@ export default function Conversation() {
     setText("");
     setSending(true);
 
-    // Optimistic: add pending message
     const tempId = `temp-${Date.now()}`;
     const pendingMsg: Message = {
       id: tempId,
@@ -175,18 +168,15 @@ export default function Conversation() {
     });
 
     if (error) {
-      // Mark as failed
       setMessages((prev) =>
         prev.map((m) => m.id === tempId ? { ...m, _pending: false, _failed: true } : m)
       );
     }
-    // On success, realtime subscription will replace the pending message
     setSending(false);
   }, [text, user, conversationId, sending]);
 
   const retryMessage = useCallback(async (msg: Message) => {
     if (!user || !conversationId) return;
-    // Remove failed message and re-send
     setMessages((prev) => prev.filter((m) => m.id !== msg.id));
     setText(msg.body || "");
   }, [user, conversationId]);
@@ -212,17 +202,17 @@ export default function Conversation() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-background">
       {/* Header */}
-      <div className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-background/95 backdrop-blur-md px-4 py-3">
-        <button onClick={() => navigate(-1)} className="text-muted-foreground">
+      <div className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-background px-5 py-3">
+        <button onClick={() => navigate(-1)} className="text-foreground active:scale-[0.97]">
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <h1 className="text-base font-bold">{otherName}</h1>
+        <h1 className="text-sm font-bold text-foreground">{otherName}</h1>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
         {messages.map((msg) => (
           <MessageBubble
             key={msg.id}
@@ -235,21 +225,20 @@ export default function Conversation() {
         <div ref={bottomRef} />
       </div>
 
-      {/* Enlarged image overlay */}
       {enlargedImage && (
         <EnlargedImageOverlay mediaUrl={enlargedImage} onClose={() => setEnlargedImage(null)} />
       )}
 
       {/* Input bar */}
-      <div className="sticky bottom-0 border-t border-border bg-background px-4 py-3 flex items-center gap-2">
-        <label className="cursor-pointer text-muted-foreground hover:text-foreground">
+      <div className="sticky bottom-0 border-t border-border bg-background px-5 py-3 flex items-center gap-2">
+        <label className="cursor-pointer text-muted-foreground hover:text-foreground transition-colors">
           <Image className="h-5 w-5" />
           <input type="file" accept="image/*" className="hidden" onChange={(e) => {
             const f = e.target.files?.[0];
             if (f) uploadMedia(f, "image");
           }} />
         </label>
-        <label className="cursor-pointer text-muted-foreground hover:text-foreground">
+        <label className="cursor-pointer text-muted-foreground hover:text-foreground transition-colors">
           <Video className="h-5 w-5" />
           <input type="file" accept="video/*" className="hidden" onChange={(e) => {
             const f = e.target.files?.[0];
@@ -262,8 +251,7 @@ export default function Conversation() {
           onChange={(e) => setText(e.target.value)}
           placeholder="Type a message..."
           rows={1}
-          className="flex-1 resize-none rounded-md border border-input px-3 py-2 text-sm bg-white text-black caret-black placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          style={{ WebkitTextFillColor: "#000" }}
+          className="flex-1 resize-none rounded-xl border border-border bg-input px-3 py-2 text-sm text-foreground caret-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&]:[-webkit-text-fill-color:hsl(var(--foreground))]"
           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendText(); } }}
           disabled={uploading}
         />
@@ -271,7 +259,6 @@ export default function Conversation() {
           size="icon"
           onClick={sendText}
           disabled={!text.trim() || uploading || sending}
-          className="bg-primary text-primary-foreground hover:bg-primary/90"
         >
           <Send className="h-4 w-4" />
         </Button>

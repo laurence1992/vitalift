@@ -100,25 +100,25 @@ export default function CoachDashboard() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <div className="bg-gradient-to-br from-primary/20 to-accent/5 px-5 pb-8 pt-12">
+      <div className="bg-background px-5 pb-6 pt-12">
         <div className="flex items-center gap-3 mb-1">
           <Users className="h-7 w-7 text-primary" />
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Coach Dashboard</h1>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">Coach Dashboard</h1>
         </div>
-        <p className="text-muted-foreground text-sm">{clients.length} {showArchived ? "archived" : "active"} clients</p>
+        <p className="text-muted-foreground text-xs">{clients.length} {showArchived ? "archived" : "active"} clients</p>
       </div>
 
-      <div className="px-5 pt-4 pb-2 flex gap-2">
+      <div className="px-5 pt-2 pb-4 flex gap-2">
         <Button
           size="sm"
-          variant={!showArchived ? "default" : "outline"}
+          variant={!showArchived ? "default" : "ghost"}
           onClick={() => setShowArchived(false)}
         >
           Active
         </Button>
         <Button
           size="sm"
-          variant={showArchived ? "default" : "outline"}
+          variant={showArchived ? "default" : "ghost"}
           onClick={() => setShowArchived(true)}
         >
           <Archive className="h-3.5 w-3.5 mr-1" />
@@ -136,7 +136,7 @@ export default function CoachDashboard() {
           <button
             key={c.id}
             onClick={() => navigate(`/coach/client/${c.id}`)}
-            className="flex w-full items-center justify-between rounded-xl border border-border bg-card px-4 py-4 text-left transition-all hover:shadow-md active:scale-[0.98]"
+            className="flex w-full items-center justify-between rounded-2xl border border-border bg-card px-4 py-4 text-left transition-all hover:border-primary hover:bg-primary/5 active:scale-[0.98]"
           >
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold truncate text-foreground">{c.name && c.name.trim() ? c.name : "Unnamed Client"}</p>
@@ -153,7 +153,7 @@ export default function CoachDashboard() {
               {showArchived ? (
                 <Button
                   size="icon"
-                  variant="outline"
+                  variant="ghost"
                   className="h-8 w-8"
                   onClick={(e) => { e.stopPropagation(); setRestoreTarget(c); }}
                   title="Restore"
@@ -163,7 +163,7 @@ export default function CoachDashboard() {
               ) : (
                 <Button
                   size="icon"
-                  variant="outline"
+                  variant="ghost"
                   className="h-8 w-8"
                   onClick={(e) => { e.stopPropagation(); setArchiveTarget(c); }}
                   title="Archive"

@@ -35,7 +35,7 @@ export default function BottomNav() {
   const tabs = profile?.role === "coach" ? coachTabs : clientTabs;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-md safe-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-[hsl(240_33%_4%)] safe-bottom">
       <div className="mx-auto flex max-w-lg items-center justify-around py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         {tabs.map((tab) => {
           const active = location.pathname === tab.path;
@@ -44,10 +44,14 @@ export default function BottomNav() {
               key={tab.path}
               onClick={() => navigate(tab.path)}
               className={cn(
-                "relative flex flex-col items-center gap-0.5 px-3 py-1 text-[10px] transition-colors",
+                "relative flex flex-col items-center gap-0.5 px-3 py-1 text-[10px] font-medium transition-colors",
                 active ? "text-primary" : "text-muted-foreground"
               )}
             >
+              {/* Active indicator line */}
+              {active && (
+                <span className="absolute -top-2 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-primary" />
+              )}
               <div className="relative">
                 <tab.icon className="h-5 w-5" />
                 {tab.badge && unreadCount > 0 && (
