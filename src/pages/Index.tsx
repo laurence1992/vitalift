@@ -162,10 +162,18 @@ export default function Index() {
   const loadPhotos = useCallback(async () => {
     if (!user) return;
 
+    const { data: pe } = await supabase
+      .from("progress_entries")
+      .select("id")
+      .eq("client_id", user.id);
+
+    if (!pe || pe.length === 0) { setPhotos([]); return; }
+
+    const ids = pe.map((e) => e.id);
     const { data: rows } = await supabase
       .from("progress_photos")
-      .select("id, photo_url, angle, progress_entries!inner(client_id)")
-      .eq("progress_entries.client_id" as any, user.id)
+      .select("id, photo_url, angle")
+      .in("progress_entry_id", ids)
       .order("created_at", { ascending: false })
       .limit(8);
 
