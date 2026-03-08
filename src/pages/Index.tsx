@@ -1,14 +1,16 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Dumbbell, Footprints, Moon, Weight, Percent, Camera, Utensils, HeartPulse, Activity, Plus, X } from "lucide-react";
-import { format, subDays } from "date-fns";
+import {
+  Dumbbell, Footprints, Moon, Weight, Percent, Camera,
+  Utensils, HeartPulse, Activity, Plus, X,
+} from "lucide-react";
+import { subDays } from "date-fns";
 import { LineChart, Line, ResponsiveContainer } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useSignedUrl } from "@/hooks/useSignedUrl";
 
 type AssignedProgram = {
   id: string;
@@ -32,21 +34,24 @@ type HealthEntry = {
 type ProgressPhoto = {
   id: string;
   photo_url: string;
+  signedUrl: string | null;
   angle: string;
 };
 
 const TILES = [
-  { key: "steps", label: "Steps", icon: Footprints, unit: "", field: "steps" as const },
-  { key: "sleep_hours", label: "Sleep", icon: Moon, unit: "h", field: "sleep_hours" as const },
-  { key: "bodyweight", label: "Body Weight", icon: Weight, unit: "kg", field: "bodyweight" as const },
-  { key: "body_fat", label: "Body Fat", icon: Percent, unit: "%", field: "body_fat" as const },
-  { key: "caloric_intake", label: "Caloric Intake", icon: Utensils, unit: "cal", field: "caloric_intake" as const },
-  { key: "resting_hr", label: "Resting HR", icon: HeartPulse, unit: "bpm", field: "resting_hr" as const },
-  { key: "blood_pressure", label: "Blood Pressure", icon: Activity, unit: "mmHg", field: "blood_pressure_systolic" as const },
+  { key: "steps",          label: "Steps",          icon: Footprints, unit: "",     field: "steps"                   as const },
+  { key: "sleep_hours",    label: "Sleep",          icon: Moon,       unit: "h",    field: "sleep_hours"             as const },
+  { key: "bodyweight",     label: "Body Weight",    icon: Weight,     unit: "kg",   field: "bodyweight"              as const },
+  { key: "body_fat",       label: "Body Fat",       icon: Percent,    unit: "%",    field: "body_fat"                as const },
+  { key: "caloric_intake", label: "Caloric Intake", icon: Utensils,   unit: "cal",  field: "caloric_intake"          as const },
+  { key: "resting_hr",     label: "Resting HR",     icon: HeartPulse, unit: "bpm",  field: "resting_hr"              as const },
+  { key: "blood_pressure", label: "Blood Pressure", icon: Activity,   unit: "mmHg", field: "blood_pressure_systolic" as const },
 ] as const;
 
-function ProgressPhotoThumb({ photoUrl }: { photoUrl: string }) {
-  const signedUrl = useSignedUrl("progress-photos", photoUrl);
+const CACHE_KEY = "vitalift_dashboard_cache";
+const CACHE_TTL = 60_000;
+
+function ProgressPhotoThumb({ signedUrl }: { signedUrl: string | null }) {
   if (!signedUrl) return <div className="rounded-lg aspect-square bg-muted animate-pulse" />;
   return <img src={signedUrl} alt="Progress" className="rounded-lg aspect-square object-cover w-full" />;
 }
@@ -65,14 +70,15 @@ function Sparkline({ data }: { data: { v: number }[] }) {
 export default function Index() {
   const navigate = useNavigate();
   const { user } = useAuth();
+
   const [assignedProgram, setAssignedProgram] = useState<AssignedProgram | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [healthEntries, setHealthEntries] = useState<HealthEntry[]>([]);
-  const [photos, setPhotos] = useState<ProgressPhoto[]>([]);
-  const [addOpen, setAddOpen] = useState(false);
-  const [photoOpen, setPhotoOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
+  const [loading,         setLoading]         = useState(true);
+  const [healthEntries,   setHealthEntries]   = useState<HealthEntry[]>([]);
+  const [photos,          setPhotos]          = useState<ProgressPhoto[]>([]);
+  const [addOpen,         setAddOpen]         = useState(false);
+  const [photoOpen,       setPhotoOpen]       = useState(false);
+  const [saving,          setSaving]          = useState(false);
+  const [photoFiles,      setPhotoFiles]      = useState<File[]>([]);
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
 
   const [form, setForm] = useState({
@@ -80,77 +86,138 @@ export default function Index() {
     caloric_intake: "", resting_hr: "", blood_pressure_systolic: "", blood_pressure_diastolic: "",
   });
 
-  useEffect(() => {
-    if (!user) return;
-    loadAll();
-  }, [user]);
-
-  const loadAll = async () => {
-    if (!user) return;
-    await Promise.all([loadAssignedProgram(), loadHealth(), loadPhotos()]);
-    setLoading(false);
+  const readCache = () => {
+    try {
+      const raw = sessionStorage.getItem(CACHE_KEY);
+      if (!raw) return null;
+      const { ts, data } = JSON.parse(raw);
+      if (Date.now() - ts > CACHE_TTL) return null;
+      return data;
+    } catch { return null; }
   };
 
-  const loadAssignedProgram = async () => {
+  const writeCache = (data: object) => {
+    try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data })); }
+    catch { /* storage full */ }
+  };
+
+  const loadAssignedProgram = useCallback(async () => {
     if (!user) return;
+
     const { data: assignment } = await supabase
       .from("client_program_assignments")
       .select("program_id")
       .eq("client_id", user.id)
       .eq("is_active", true)
       .maybeSingle();
+
     if (!assignment?.program_id) return;
 
     const { data: prog } = await supabase
       .from("programs")
-      .select("id, name")
+      .select("id, name, program_days(id, label, day_note, sort_order)")
       .eq("id", assignment.program_id)
       .maybeSingle();
+
     if (!prog) return;
 
-    const { data: days } = await supabase
-      .from("program_days")
-      .select("id, label, day_note")
-      .eq("program_id", prog.id)
-      .order("sort_order");
+    const days = (prog as any).program_days ?? [];
+    const dayIds: string[] = days.map((d: any) => d.id);
 
-    const daysList = [];
-    for (const d of days || []) {
-      const { count } = await supabase
-        .from("program_exercises")
-        .select("id", { count: "exact", head: true })
-        .eq("program_day_id", d.id);
-      daysList.push({ id: d.id, label: d.label, day_note: d.day_note || "", exerciseCount: count || 0 });
+    const { data: exercises } = await supabase
+      .from("program_exercises")
+      .select("program_day_id")
+      .in("program_day_id", dayIds);
+
+    const countMap: Record<string, number> = {};
+    for (const ex of exercises ?? []) {
+      countMap[ex.program_day_id] = (countMap[ex.program_day_id] ?? 0) + 1;
     }
-    setAssignedProgram({ id: prog.id, name: prog.name, days: daysList });
-  };
 
-  const loadHealth = async () => {
+    const sortedDays = [...days].sort((a: any, b: any) => a.sort_order - b.sort_order);
+
+    setAssignedProgram({
+      id: prog.id,
+      name: prog.name,
+      days: sortedDays.map((d: any) => ({
+        id:            d.id,
+        label:         d.label,
+        day_note:      d.day_note ?? "",
+        exerciseCount: countMap[d.id] ?? 0,
+      })),
+    });
+  }, [user]);
+
+  const loadHealth = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
       .from("health_entries")
       .select("*")
       .eq("client_id", user.id)
       .order("date", { ascending: true });
-    setHealthEntries((data as HealthEntry[]) || []);
-  };
+    setHealthEntries((data as HealthEntry[]) ?? []);
+    return data;
+  }, [user]);
 
-  const loadPhotos = async () => {
+  const loadPhotos = useCallback(async () => {
     if (!user) return;
+
     const { data: pe } = await supabase
       .from("progress_entries")
       .select("id")
       .eq("client_id", user.id);
-    if (pe && pe.length > 0) {
-      const ids = pe.map((e) => e.id);
-      const { data: ph } = await supabase
-        .from("progress_photos")
-        .select("*")
-        .in("progress_entry_id", ids)
-        .order("created_at", { ascending: false });
-      setPhotos((ph as ProgressPhoto[]) || []);
+
+    if (!pe || pe.length === 0) { setPhotos([]); return; }
+
+    const ids = pe.map((e) => e.id);
+    const { data: rows } = await supabase
+      .from("progress_photos")
+      .select("id, photo_url, angle")
+      .in("progress_entry_id", ids)
+      .order("created_at", { ascending: false })
+      .limit(8);
+
+    if (!rows || rows.length === 0) { setPhotos([]); return; }
+
+    const withUrls: ProgressPhoto[] = await Promise.all(
+      rows.map(async (row: any) => {
+        const { data } = await supabase.storage
+          .from("progress-photos")
+          .createSignedUrl(row.photo_url, 3600);
+        return {
+          id:        row.id,
+          photo_url: row.photo_url,
+          signedUrl: data?.signedUrl ?? null,
+          angle:     row.angle,
+        };
+      })
+    );
+
+    setPhotos(withUrls);
+    return withUrls;
+  }, [user]);
+
+  const loadAll = useCallback(async () => {
+    if (!user) return;
+
+    const cached = readCache();
+    if (cached) {
+      if (cached.assignedProgram) setAssignedProgram(cached.assignedProgram);
+      if (cached.healthEntries)   setHealthEntries(cached.healthEntries);
+      if (cached.photos)          setPhotos(cached.photos);
+      setLoading(false);
+      await Promise.all([loadAssignedProgram(), loadHealth(), loadPhotos()]);
+      return;
     }
-  };
+
+    await Promise.all([loadAssignedProgram(), loadHealth(), loadPhotos()]);
+    setLoading(false);
+  }, [user, loadAssignedProgram, loadHealth, loadPhotos]);
+
+  useEffect(() => {
+    if (!user) return;
+    loadAll();
+  }, [user]);
 
   const last7 = useMemo(() => {
     const cutoff = subDays(new Date(), 7).toISOString().split("T")[0];
@@ -171,31 +238,35 @@ export default function Index() {
     if (!user) return;
     setSaving(true);
     await supabase.from("health_entries").insert({
-      client_id: user.id,
-      steps: form.steps ? Number(form.steps) : null,
-      sleep_hours: form.sleep_hours ? Number(form.sleep_hours) : null,
-      bodyweight: form.bodyweight ? Number(form.bodyweight) : null,
-      body_fat: form.body_fat ? Number(form.body_fat) : null,
-      caloric_intake: form.caloric_intake ? Number(form.caloric_intake) : null,
-      resting_hr: form.resting_hr ? Number(form.resting_hr) : null,
-      blood_pressure_systolic: form.blood_pressure_systolic ? Number(form.blood_pressure_systolic) : null,
+      client_id:                user.id,
+      steps:                    form.steps                    ? Number(form.steps)                    : null,
+      sleep_hours:              form.sleep_hours              ? Number(form.sleep_hours)              : null,
+      bodyweight:               form.bodyweight               ? Number(form.bodyweight)               : null,
+      body_fat:                 form.body_fat                 ? Number(form.body_fat)                 : null,
+      caloric_intake:           form.caloric_intake           ? Number(form.caloric_intake)           : null,
+      resting_hr:               form.resting_hr               ? Number(form.resting_hr)               : null,
+      blood_pressure_systolic:  form.blood_pressure_systolic  ? Number(form.blood_pressure_systolic)  : null,
       blood_pressure_diastolic: form.blood_pressure_diastolic ? Number(form.blood_pressure_diastolic) : null,
     });
     setForm({ steps: "", sleep_hours: "", bodyweight: "", body_fat: "", caloric_intake: "", resting_hr: "", blood_pressure_systolic: "", blood_pressure_diastolic: "" });
     setAddOpen(false);
     setSaving(false);
+    sessionStorage.removeItem(CACHE_KEY);
     loadHealth();
   };
 
   const handlePhotoUpload = async () => {
     if (!user || photoFiles.length === 0) return;
     setUploadingPhotos(true);
+
+    const today = new Date().toISOString().split("T")[0];
     const { data: existing } = await supabase
       .from("progress_entries")
       .select("id")
       .eq("client_id", user.id)
-      .eq("date", new Date().toISOString().split("T")[0])
+      .eq("date", today)
       .maybeSingle();
+
     let entryId = existing?.id;
     if (!entryId) {
       const { data: newEntry } = await supabase
@@ -205,20 +276,25 @@ export default function Index() {
         .single();
       entryId = newEntry?.id;
     }
+
     if (entryId) {
-      for (const file of photoFiles) {
-        const path = `${user.id}/${Date.now()}-${file.name}`;
-        await supabase.storage.from("progress-photos").upload(path, file);
-        await supabase.from("progress_photos").insert({
-          progress_entry_id: entryId,
-          photo_url: path,
-          angle: "other",
-        });
-      }
+      await Promise.all(
+        photoFiles.map(async (file) => {
+          const path = `${user.id}/${Date.now()}-${file.name}`;
+          await supabase.storage.from("progress-photos").upload(path, file);
+          await supabase.from("progress_photos").insert({
+            progress_entry_id: entryId,
+            photo_url:         path,
+            angle:             "other",
+          });
+        })
+      );
     }
+
     setPhotoFiles([]);
     setPhotoOpen(false);
     setUploadingPhotos(false);
+    sessionStorage.removeItem(CACHE_KEY);
     loadPhotos();
   };
 
@@ -232,7 +308,7 @@ export default function Index() {
         value={form[field]}
         onChange={(e) => setForm((p) => ({ ...p, [field]: e.target.value }))}
         placeholder={placeholder || "0"}
-        className="h-9 text-foreground caret-foreground [&]:[-webkit-text-fill-color:hsl(var(--foreground))]"
+        className="h-9 text-foreground caret-foreground"
       />
     </div>
   );
@@ -259,8 +335,7 @@ export default function Index() {
       </div>
 
       <div className="px-5 -mt-4 space-y-6">
-        {/* Assigned program days */}
-        {hasAssignedProgram && (
+        {hasAssignedProgram ? (
           <div>
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
               Your Program
@@ -274,16 +349,12 @@ export default function Index() {
                 >
                   <span className="text-xs font-semibold uppercase text-primary">{day.label}</span>
                   {day.day_note && <span className="mt-1 text-sm font-medium text-foreground">{day.day_note}</span>}
-                  <span className="mt-2 text-xs text-muted-foreground">
-                    {day.exerciseCount} exercises
-                  </span>
+                  <span className="mt-2 text-xs text-muted-foreground">{day.exerciseCount} exercises</span>
                 </button>
               ))}
             </div>
           </div>
-        )}
-
-        {!hasAssignedProgram && (
+        ) : (
           <div className="rounded-xl border border-border bg-card p-6 text-center">
             <Dumbbell className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
             <p className="text-sm font-medium text-foreground">No program assigned yet</p>
@@ -293,23 +364,17 @@ export default function Index() {
 
         {/* Dashboard Tiles */}
         <div>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              Dashboard
-            </h2>
-          </div>
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Dashboard</h2>
           <div className="grid grid-cols-2 gap-3">
             {TILES.map((tile) => {
-              const latest = tile.key === "blood_pressure"
-                ? (getLatest("blood_pressure_systolic") != null
-                  ? `${getLatest("blood_pressure_systolic")}/${getLatest("blood_pressure_diastolic") ?? "—"}`
-                  : "—")
-                : getLatest(tile.field);
-              const sparkData = getSparkData(tile.field);
-              const displayValue = tile.key === "blood_pressure"
-                ? latest
-                : latest != null ? `${latest}` : "—";
-
+              const latest =
+                tile.key === "blood_pressure"
+                  ? getLatest("blood_pressure_systolic") != null
+                    ? `${getLatest("blood_pressure_systolic")}/${getLatest("blood_pressure_diastolic") ?? "—"}`
+                    : "—"
+                  : getLatest(tile.field);
+              const sparkData    = getSparkData(tile.field);
+              const displayValue = tile.key === "blood_pressure" ? latest : latest != null ? `${latest}` : "—";
               return (
                 <div key={tile.key} className="rounded-2xl border border-border bg-card p-3 shadow-sm">
                   <div className="flex items-center gap-2 mb-1">
@@ -342,8 +407,8 @@ export default function Index() {
                 <p className="text-xs text-muted-foreground">No photos yet</p>
               ) : (
                 <div className="grid grid-cols-4 gap-2">
-                  {photos.slice(0, 8).map((p) => (
-                    <ProgressPhotoThumb key={p.id} photoUrl={p.photo_url} />
+                  {photos.map((p) => (
+                    <ProgressPhotoThumb key={p.id} signedUrl={p.signedUrl} />
                   ))}
                 </div>
               )}
