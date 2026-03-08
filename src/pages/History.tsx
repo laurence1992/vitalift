@@ -59,7 +59,7 @@ export default function History() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       </div>
     );
@@ -67,18 +67,18 @@ export default function History() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <div className="bg-gradient-to-br from-primary/20 to-accent/5 px-5 pb-8 pt-12">
+      <div className="bg-background px-5 pb-6 pt-12">
         <div className="flex items-center gap-3 mb-1">
           <Clock className="h-7 w-7 text-primary" />
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Workout History</h1>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">Workout History</h1>
         </div>
       </div>
 
-      <div className="px-5 -mt-4 space-y-2">
+      <div className="px-5 space-y-2">
         {workouts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
             <Clock className="mb-3 h-10 w-10" />
-            <p className="text-sm">No workouts yet</p>
+            <p className="text-sm font-semibold text-foreground">No workouts yet</p>
             <p className="text-xs">Complete a workout to see it here</p>
           </div>
         ) : (
@@ -86,7 +86,7 @@ export default function History() {
             <button
               key={w.id}
               onClick={() => navigate(`/history/${w.id}`)}
-              className="flex w-full items-center justify-between rounded-xl border border-border bg-card px-4 py-3 text-left hover:shadow-md active:scale-[0.98] transition-all"
+              className="flex w-full items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 text-left hover:border-primary hover:bg-primary/5 active:scale-[0.98] transition-all"
             >
               <div>
                 <p className="text-sm font-semibold text-foreground">{dayLabels[w.day_id] || w.day_id}</p>

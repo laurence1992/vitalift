@@ -12,6 +12,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
+type Tile = {
+  key: string;
+  label: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  unit: string;
+  field: 'steps' | 'sleep_hours' | 'bodyweight' | 'body_fat' | 'caloric_intake' | 'resting_hr' | 'blood_pressure_systolic';
+};
+
 type AssignedProgram = {
   id: string;
   name: string;
@@ -52,8 +60,8 @@ const CACHE_KEY = "vitalift_dashboard_cache";
 const CACHE_TTL = 60_000;
 
 function ProgressPhotoThumb({ signedUrl }: { signedUrl: string | null }) {
-  if (!signedUrl) return <div className="rounded-lg aspect-square bg-muted animate-pulse" />;
-  return <img src={signedUrl} alt="Progress" className="rounded-lg aspect-square object-cover w-full" />;
+  if (!signedUrl) return <div className="rounded-xl aspect-square bg-secondary animate-pulse" />;
+  return <img src={signedUrl} alt="Progress" className="rounded-xl aspect-square object-cover w-full" />;
 }
 
 function Sparkline({ data }: { data: { v: number }[] }) {
@@ -302,20 +310,20 @@ export default function Index() {
 
   const F = ({ label, field, placeholder }: { label: string; field: keyof typeof form; placeholder?: string }) => (
     <div>
-      <label className="text-xs font-medium text-muted-foreground">{label}</label>
+      <label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{label}</label>
       <Input
         type="number"
         value={form[field]}
         onChange={(e) => setForm((p) => ({ ...p, [field]: e.target.value }))}
         placeholder={placeholder || "0"}
-        className="h-9 text-foreground caret-foreground"
+        className="h-10"
       />
     </div>
   );
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
       </div>
     );
@@ -323,21 +331,21 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
-      <div className="bg-gradient-to-br from-primary/20 to-accent/5 px-5 pb-8 pt-12">
+      {/* Header — flat, no gradient */}
+      <div className="bg-background px-5 pb-6 pt-12">
         <div className="flex items-center gap-3 mb-1">
           <Dumbbell className="h-7 w-7 text-primary" />
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">VitaLift</h1>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">VitaLift</h1>
         </div>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-muted-foreground text-xs">
           {hasAssignedProgram ? assignedProgram.name : "Stronger Every Session. 💪"}
         </p>
       </div>
 
-      <div className="px-5 -mt-4 space-y-6">
+      <div className="px-5 space-y-6">
         {hasAssignedProgram ? (
           <div>
-            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            <h2 className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
               Your Program
             </h2>
             <div className="grid grid-cols-2 gap-3">
@@ -345,26 +353,26 @@ export default function Index() {
                 <button
                   key={day.id}
                   onClick={() => navigate(`/workout/program/${day.id}`)}
-                  className="flex flex-col rounded-xl border border-border bg-card p-4 text-left shadow-sm transition-all hover:shadow-md active:scale-[0.97]"
+                  className="flex flex-col rounded-2xl border border-border bg-card p-4 text-left transition-all hover:border-primary hover:bg-primary/5 active:scale-[0.97]"
                 >
-                  <span className="text-xs font-semibold uppercase text-primary">{day.label}</span>
-                  {day.day_note && <span className="mt-1 text-sm font-medium text-foreground">{day.day_note}</span>}
+                  <span className="text-[10px] font-semibold uppercase tracking-widest text-primary">{day.label}</span>
+                  {day.day_note && <span className="mt-1 text-sm font-semibold text-foreground">{day.day_note}</span>}
                   <span className="mt-2 text-xs text-muted-foreground">{day.exerciseCount} exercises</span>
                 </button>
               ))}
             </div>
           </div>
         ) : (
-          <div className="rounded-xl border border-border bg-card p-6 text-center">
+          <div className="rounded-2xl border border-border bg-card p-6 text-center">
             <Dumbbell className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm font-medium text-foreground">No program assigned yet</p>
+            <p className="text-sm font-semibold text-foreground">No program assigned yet</p>
             <p className="text-xs text-muted-foreground mt-1">Your coach will assign a program for you.</p>
           </div>
         )}
 
         {/* Dashboard Tiles */}
         <div>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Dashboard</h2>
+          <h2 className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Dashboard</h2>
           <div className="grid grid-cols-2 gap-3">
             {TILES.map((tile) => {
               const latest =
@@ -376,12 +384,12 @@ export default function Index() {
               const sparkData    = getSparkData(tile.field);
               const displayValue = tile.key === "blood_pressure" ? latest : latest != null ? `${latest}` : "—";
               return (
-                <div key={tile.key} className="rounded-2xl border border-border bg-card p-3 shadow-sm">
+                <div key={tile.key} className="rounded-2xl border border-border bg-card p-4">
                   <div className="flex items-center gap-2 mb-1">
                     <tile.icon className="h-4 w-4 text-primary" />
-                    <span className="text-[11px] font-medium text-muted-foreground">{tile.label}</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{tile.label}</span>
                   </div>
-                  <p className="text-xl font-bold text-foreground leading-tight">
+                  <p className="text-3xl font-bold text-foreground leading-tight">
                     {displayValue}
                     {displayValue !== "—" && (
                       <span className="text-xs font-normal text-muted-foreground ml-1">{tile.unit}</span>
@@ -393,11 +401,11 @@ export default function Index() {
             })}
 
             {/* Photos tile */}
-            <div className="rounded-2xl border border-border bg-card p-3 shadow-sm col-span-2">
+            <div className="rounded-2xl border border-border bg-card p-4 col-span-2">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Camera className="h-4 w-4 text-primary" />
-                  <span className="text-[11px] font-medium text-muted-foreground">Progress Photos</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Progress Photos</span>
                 </div>
                 <Button size="sm" className="h-7 px-2 text-xs" onClick={() => setPhotoOpen(true)}>
                   <Plus className="h-3 w-3 mr-1" /> Add
@@ -420,7 +428,7 @@ export default function Index() {
       {/* FAB for health data */}
       <button
         onClick={() => setAddOpen(true)}
-        className="fixed bottom-24 right-5 z-40 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:bg-primary/90 transition-colors"
+        className="fixed bottom-24 right-5 z-40 h-14 w-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/85 transition-all active:scale-[0.95]"
       >
         <Plus className="h-6 w-6" />
       </button>
@@ -449,7 +457,7 @@ export default function Index() {
       <Dialog open={photoOpen} onOpenChange={setPhotoOpen}>
         <DialogContent>
           <DialogHeader><DialogTitle>Upload Progress Photos</DialogTitle></DialogHeader>
-          <label className="flex flex-col items-center gap-2 rounded-xl border-2 border-dashed border-border p-6 cursor-pointer hover:bg-muted/30 transition-colors">
+          <label className="flex flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-border p-6 cursor-pointer hover:bg-secondary transition-colors">
             <Camera className="h-8 w-8 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">Tap to select photos</span>
             <input
@@ -466,7 +474,7 @@ export default function Index() {
               <div className="flex flex-wrap gap-2">
                 {photoFiles.map((f, i) => (
                   <div key={i} className="relative">
-                    <img src={URL.createObjectURL(f)} alt="" className="h-16 w-16 rounded-lg object-cover" />
+                    <img src={URL.createObjectURL(f)} alt="" className="h-16 w-16 rounded-xl object-cover" />
                     <button
                       onClick={() => setPhotoFiles((prev) => prev.filter((_, j) => j !== i))}
                       className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"

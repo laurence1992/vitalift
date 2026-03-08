@@ -20,17 +20,17 @@ function RecipeCard({ recipe: r, isCoach, onEdit, onDelete }: { recipe: Recipe; 
   const signedUrl = useSignedUrl("recipe-images", r.image_url);
 
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
+    <div className="rounded-2xl border border-border bg-card overflow-hidden">
       {signedUrl && (
         <img src={signedUrl} alt={r.title} className="w-full h-40 object-cover" />
       )}
       <div className="p-4 space-y-2">
         <div className="flex items-start justify-between">
-          <h3 className="text-base font-bold text-foreground">{r.title}</h3>
+          <h3 className="text-sm font-semibold text-foreground">{r.title}</h3>
           {isCoach && (
             <div className="flex gap-1">
-              <button onClick={() => onEdit(r)} className="p-1 text-muted-foreground hover:text-foreground"><Edit2 className="h-4 w-4" /></button>
-              <button onClick={() => onDelete(r.id)} className="p-1 text-muted-foreground hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
+              <button onClick={() => onEdit(r)} className="p-1 text-muted-foreground hover:text-foreground transition-colors"><Edit2 className="h-4 w-4" /></button>
+              <button onClick={() => onDelete(r.id)} className="p-1 text-muted-foreground hover:text-foreground transition-colors"><Trash2 className="h-4 w-4" /></button>
             </div>
           )}
         </div>
@@ -42,13 +42,13 @@ function RecipeCard({ recipe: r, isCoach, onEdit, onDelete }: { recipe: Recipe; 
         </div>
         {r.ingredients && (
           <div>
-            <p className="text-xs font-semibold text-muted-foreground mb-1">Ingredients</p>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">Ingredients</p>
             <p className="text-sm whitespace-pre-line text-foreground">{r.ingredients}</p>
           </div>
         )}
         {r.instructions && (
           <div>
-            <p className="text-xs font-semibold text-muted-foreground mb-1">Instructions</p>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">Instructions</p>
             <p className="text-sm whitespace-pre-line text-foreground">{r.instructions}</p>
           </div>
         )}
@@ -95,14 +95,14 @@ export default function Recipes() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <div className="bg-gradient-to-br from-primary/20 to-accent/5 px-5 pb-8 pt-12">
+      <div className="bg-background px-5 pb-6 pt-12">
         <div className="flex items-center gap-3 mb-1">
           <UtensilsCrossed className="h-7 w-7 text-primary" />
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Recipes</h1>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">Recipes</h1>
         </div>
       </div>
 
-      <div className="px-5 -mt-4 space-y-4">
+      <div className="px-5 space-y-4">
         {isCoach && (
           <Dialog open={editOpen} onOpenChange={setEditOpen}>
             <DialogTrigger asChild>
@@ -111,16 +111,16 @@ export default function Recipes() {
             <DialogContent className="max-h-[85vh] overflow-y-auto">
               <DialogHeader><DialogTitle>{editId ? "Edit" : "New"} Recipe</DialogTitle></DialogHeader>
               <div className="space-y-3">
-                <div><label className="text-sm font-medium">Title</label><Input value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} /></div>
+                <div><label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Title</label><Input value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} /></div>
                 <div className="grid grid-cols-2 gap-2">
-                  <div><label className="text-xs font-medium">Calories</label><Input type="number" value={form.calories} onChange={(e) => setForm((p) => ({ ...p, calories: e.target.value }))} /></div>
-                  <div><label className="text-xs font-medium">Protein (g)</label><Input type="number" value={form.protein} onChange={(e) => setForm((p) => ({ ...p, protein: e.target.value }))} /></div>
-                  <div><label className="text-xs font-medium">Carbs (g)</label><Input type="number" value={form.carbs} onChange={(e) => setForm((p) => ({ ...p, carbs: e.target.value }))} /></div>
-                  <div><label className="text-xs font-medium">Fats (g)</label><Input type="number" value={form.fats} onChange={(e) => setForm((p) => ({ ...p, fats: e.target.value }))} /></div>
+                  <div><label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Calories</label><Input type="number" value={form.calories} onChange={(e) => setForm((p) => ({ ...p, calories: e.target.value }))} /></div>
+                  <div><label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Protein (g)</label><Input type="number" value={form.protein} onChange={(e) => setForm((p) => ({ ...p, protein: e.target.value }))} /></div>
+                  <div><label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Carbs (g)</label><Input type="number" value={form.carbs} onChange={(e) => setForm((p) => ({ ...p, carbs: e.target.value }))} /></div>
+                  <div><label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Fats (g)</label><Input type="number" value={form.fats} onChange={(e) => setForm((p) => ({ ...p, fats: e.target.value }))} /></div>
                 </div>
-                <div><label className="text-sm font-medium">Ingredients</label><Textarea value={form.ingredients} onChange={(e) => setForm((p) => ({ ...p, ingredients: e.target.value }))} placeholder="One per line..." className="min-h-[100px]" /></div>
-                <div><label className="text-sm font-medium">Instructions</label><Textarea value={form.instructions} onChange={(e) => setForm((p) => ({ ...p, instructions: e.target.value }))} placeholder="Step by step..." className="min-h-[100px]" /></div>
-                <div><label className="text-sm font-medium">Image (optional)</label><Input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} /></div>
+                <div><label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Ingredients</label><Textarea value={form.ingredients} onChange={(e) => setForm((p) => ({ ...p, ingredients: e.target.value }))} placeholder="One per line..." className="min-h-[100px]" /></div>
+                <div><label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Instructions</label><Textarea value={form.instructions} onChange={(e) => setForm((p) => ({ ...p, instructions: e.target.value }))} placeholder="Step by step..." className="min-h-[100px]" /></div>
+                <div><label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Image (optional)</label><Input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} /></div>
                 <Button onClick={handleSave} disabled={saving || !form.title} className="w-full">{saving ? "Saving..." : "Save Recipe"}</Button>
               </div>
             </DialogContent>

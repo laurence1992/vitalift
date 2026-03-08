@@ -216,7 +216,6 @@ export default function ExerciseLibrary({
 
   return (
     <div className="space-y-3">
-      {/* Search + filters */}
       <div className="flex gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -229,22 +228,22 @@ export default function ExerciseLibrary({
         </div>
         {!selectable && (
           <div className="flex gap-1">
-            <Button size="sm" variant={!showArchived ? "default" : "outline"} onClick={() => setShowArchived(false)} className="text-xs">Active</Button>
-            <Button size="sm" variant={showArchived ? "default" : "outline"} onClick={() => setShowArchived(true)} className="text-xs">Archived</Button>
+            <Button size="sm" variant={!showArchived ? "default" : "ghost"} onClick={() => setShowArchived(false)} className="text-xs">Active</Button>
+            <Button size="sm" variant={showArchived ? "default" : "ghost"} onClick={() => setShowArchived(true)} className="text-xs">Archived</Button>
           </div>
         )}
       </div>
 
       <div className="flex gap-2">
         <Select value={filterMuscle} onValueChange={(v) => setFilterMuscle(v === "all" ? "" : v)}>
-          <SelectTrigger className="h-8 text-xs flex-1 text-foreground"><SelectValue placeholder="Muscle Group" /></SelectTrigger>
+          <SelectTrigger className="h-8 text-xs flex-1"><SelectValue placeholder="Muscle Group" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Muscles</SelectItem>
             {MUSCLE_GROUPS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={filterEquipment} onValueChange={(v) => setFilterEquipment(v === "all" ? "" : v)}>
-          <SelectTrigger className="h-8 text-xs flex-1 text-foreground"><SelectValue placeholder="Equipment" /></SelectTrigger>
+          <SelectTrigger className="h-8 text-xs flex-1"><SelectValue placeholder="Equipment" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Equipment</SelectItem>
             {EQUIPMENT.map((e) => <SelectItem key={e} value={e}>{e}</SelectItem>)}
@@ -252,65 +251,75 @@ export default function ExerciseLibrary({
         </Select>
       </div>
 
-      {/* Exercise list */}
       <div className="space-y-2 max-h-[60vh] overflow-y-auto">
         {filtered.length === 0 && (
           <p className="text-sm text-muted-foreground text-center py-4">No exercises found.</p>
         )}
-        {filtered.map((ex) => (
-          <div
-            key={ex.id}
-            className="flex items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5 cursor-pointer hover:shadow-md active:scale-[0.98] transition-all"
-            onClick={() => selectable ? onSelect?.(ex) : setDetailExercise(ex)}
-          >
-            {ex.image_url && (
-              <div className="h-12 w-12 shrink-0 rounded-lg bg-muted/30 overflow-hidden flex items-center justify-center">
-                <img src={resolveExerciseImage(ex.image_url)} alt={ex.name} className="h-full w-full object-contain" />
+        {filtered.map((ex) => {
+          const meta = [ex.category, ex.muscle_group, ex.equipment].filter(Boolean).join(" · ");
+          return (
+            <div
+              key={ex.id}
+              className="flex items-center gap-3 rounded-2xl border border-border bg-card px-3 py-2.5 cursor-pointer hover:border-primary hover:bg-primary/5 active:scale-[0.98] transition-all"
+              onClick={() => selectable ? onSelect?.(ex) : setDetailExercise(ex)}
+            >
+              {ex.image_url ? (
+                <div className="h-11 w-11 shrink-0 rounded-xl bg-secondary overflow-hidden flex items-center justify-center">
+                  <img src={resolveExerciseImage(ex.image_url)} alt={ex.name} className="h-full w-full object-contain" />
+                </div>
+              ) : (
+                <div className="h-11 w-11 shrink-0 rounded-xl bg-secondary flex items-center justify-center text-xs text-muted-foreground">
+                  {ex.name.slice(0, 2)}
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold truncate text-foreground">{ex.name}</p>
+                {meta ? (
+                  <span className="inline-flex items-center rounded-full bg-primary/15 text-primary text-[10px] font-semibold px-2 py-0.5 mt-0.5">
+                    {meta}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center rounded-full bg-border text-muted-foreground text-[10px] px-2 py-0.5 mt-0.5">
+                    Uncategorized
+                  </span>
+                )}
+                {ex.category === "Cardio" && ex.work_seconds && ex.rounds && (
+                  <p className="text-[10px] text-primary font-medium mt-0.5">
+                    {formatCardioInterval(ex)}
+                  </p>
+                )}
               </div>
-            )}
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold truncate text-foreground">{ex.name}</p>
-              <p className="text-xs text-muted-foreground truncate">
-                {[ex.category, ex.muscle_group, ex.equipment].filter(Boolean).join(" · ") || "Uncategorized"}
-              </p>
-              {ex.category === "Cardio" && ex.work_seconds && ex.rounds && (
-                <p className="text-[10px] text-primary font-medium">
-                  {formatCardioInterval(ex)}
-                </p>
+              {!selectable && (
+                <div className="flex gap-1 shrink-0">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                    onClick={(e) => { e.stopPropagation(); openEdit(ex); }}
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                    onClick={(e) => { e.stopPropagation(); toggleArchive(ex); }}
+                  >
+                    {ex.archived_at ? <RotateCcw className="h-3.5 w-3.5" /> : <Archive className="h-3.5 w-3.5" />}
+                  </Button>
+                </div>
               )}
             </div>
-            {!selectable && (
-              <div className="flex gap-1 shrink-0">
-                <Button
-                  size="icon"
-                  variant="outline"
-                  className="h-7 w-7"
-                  onClick={(e) => { e.stopPropagation(); openEdit(ex); }}
-                >
-                  <Pencil className="h-3.5 w-3.5" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="outline"
-                  className="h-7 w-7"
-                  onClick={(e) => { e.stopPropagation(); toggleArchive(ex); }}
-                >
-                  {ex.archived_at ? <RotateCcw className="h-3.5 w-3.5" /> : <Archive className="h-3.5 w-3.5" />}
-                </Button>
-              </div>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* Add button */}
       {!selectable && (
         <Button onClick={openAdd} className="w-full gap-2">
           <Plus className="h-4 w-4" /> Add Exercise
         </Button>
       )}
 
-      {/* Exercise detail modal */}
       <Dialog open={!!detailExercise} onOpenChange={() => setDetailExercise(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -318,11 +327,11 @@ export default function ExerciseLibrary({
           </DialogHeader>
           <div className="space-y-4">
             {detailExercise?.image_url && (
-              <div className="flex items-center justify-center rounded-lg bg-muted/30 p-2">
+              <div className="flex items-center justify-center rounded-xl bg-secondary p-2">
                 <img
                   src={resolveExerciseImage(detailExercise.image_url)}
                   alt={detailExercise.name}
-                  className="w-full max-h-[250px] rounded-lg object-contain"
+                  className="w-full max-h-[250px] rounded-xl object-contain"
                 />
               </div>
             )}
@@ -346,7 +355,7 @@ export default function ExerciseLibrary({
                   href={url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground no-underline"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground no-underline active:scale-[0.97]"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
                   Watch Demo
@@ -357,7 +366,6 @@ export default function ExerciseLibrary({
         </DialogContent>
       </Dialog>
 
-      {/* Add/Edit exercise dialog */}
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent className="max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editingId ? "Edit Exercise" : "Add Exercise"}</DialogTitle></DialogHeader>
@@ -384,9 +392,8 @@ export default function ExerciseLibrary({
               </SelectContent>
             </Select>
 
-            {/* Cardio timing fields */}
             {isCardio && (
-              <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2">
+              <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 space-y-2">
                 <p className="text-xs font-semibold text-primary">Interval Timing</p>
                 <div className="grid grid-cols-3 gap-2">
                   <div>

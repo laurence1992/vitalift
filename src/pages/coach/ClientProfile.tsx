@@ -92,20 +92,19 @@ export default function ClientProfile() {
   if (showBuilder) {
     return (
       <div className="min-h-screen bg-background pb-24">
-        <div className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-background/95 backdrop-blur-md px-4 py-3">
-          <button onClick={() => setShowBuilder(false)} className="text-muted-foreground">
+        <div className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-background px-5 py-3">
+          <button onClick={() => setShowBuilder(false)} className="text-foreground active:scale-[0.97]">
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <h1 className="text-base font-bold text-foreground">{program ? "Edit Program" : "Create Program"}</h1>
+          <h1 className="text-sm font-bold text-foreground">{program ? "Edit Program" : "Create Program"}</h1>
         </div>
-        <div className="px-4 pt-4">
+        <div className="px-5 pt-4">
           <ProgramBuilder clientId={clientId!} programId={program?.id} onSaved={() => { setShowBuilder(false); load(); }} />
         </div>
       </div>
     );
   }
 
-  // Workout detail view
   if (selectedWorkout) {
     const workout = workouts.find((w) => w.id === selectedWorkout);
     const byExercise: Record<string, WorkoutSetRow[]> = {};
@@ -116,26 +115,26 @@ export default function ClientProfile() {
 
     return (
       <div className="min-h-screen bg-background pb-24">
-        <div className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-background/95 backdrop-blur-md px-4 py-3">
-          <button onClick={() => setSelectedWorkout(null)} className="text-muted-foreground">
+        <div className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-background px-5 py-3">
+          <button onClick={() => setSelectedWorkout(null)} className="text-foreground active:scale-[0.97]">
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-base font-bold text-foreground">Workout Detail</h1>
+            <h1 className="text-sm font-bold text-foreground">Workout Detail</h1>
             {workout && <p className="text-xs text-muted-foreground">{format(new Date(workout.date), "MMM d, yyyy")} · {formatDuration(workout.duration_seconds)}</p>}
           </div>
         </div>
-        <div className="px-4 pt-4 space-y-3">
+        <div className="px-5 pt-4 space-y-3">
           {Object.entries(byExercise).map(([exId, sets]) => {
             const volume = sets.reduce((s, set) => s + (set.weight ?? 0) * (set.reps ?? 0), 0);
             return (
-              <div key={exId} className="rounded-xl border border-border bg-card p-4">
+              <div key={exId} className="rounded-2xl border border-border bg-card p-4">
                 <p className="text-sm font-semibold text-foreground mb-1">{exerciseNames[exId] || exId}</p>
                 {volume > 0 && <p className="text-xs text-muted-foreground mb-2">Volume: {volume.toLocaleString()} kg</p>}
                 <div className="space-y-1">
                   {sets.map((s, i) => (
-                    <div key={i} className="flex gap-4 rounded-lg bg-muted/50 px-3 py-1.5 text-sm text-foreground">
-                      <span className="w-8 text-xs font-bold text-muted-foreground">Set {s.set_number}</span>
+                    <div key={i} className="flex gap-4 rounded-xl bg-secondary px-3 py-1.5 text-sm text-foreground">
+                      <span className="w-8 text-[10px] font-bold text-muted-foreground">Set {s.set_number}</span>
                       <span>{s.weight ?? "–"} kg</span>
                       <span>× {s.reps ?? "–"}</span>
                     </div>
@@ -145,8 +144,8 @@ export default function ClientProfile() {
             );
           })}
           {workout?.session_notes && (
-            <div className="rounded-xl border border-border bg-card p-4">
-              <p className="text-xs font-semibold uppercase text-muted-foreground mb-1">Notes</p>
+            <div className="rounded-2xl border border-border bg-card p-4">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">Notes</p>
               <p className="text-sm whitespace-pre-wrap text-foreground">{workout.session_notes}</p>
             </div>
           )}
@@ -157,30 +156,27 @@ export default function ClientProfile() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
-      <div className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-background/95 backdrop-blur-md px-4 py-3">
-        <button onClick={() => navigate(-1)} className="text-muted-foreground">
+      <div className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-background px-5 py-3">
+        <button onClick={() => navigate(-1)} className="text-foreground active:scale-[0.97]">
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div className="flex-1">
-          <h1 className="text-base font-bold text-foreground">{client?.name && client.name.trim() ? client.name : "Unnamed Client"}</h1>
+          <h1 className="text-sm font-bold text-foreground">{client?.name && client.name.trim() ? client.name : "Unnamed Client"}</h1>
         </div>
       </div>
 
-      <div className="px-4 pt-4 space-y-6">
-        {/* Client actions */}
+      <div className="px-5 pt-4 space-y-6">
         <div className="flex gap-2">
           <Button size="sm" className="flex-1 gap-1.5" onClick={handleMessage}>
             <MessageSquare className="h-3.5 w-3.5" /> Message
           </Button>
-          <Button size="sm" variant="outline" className="flex-1 gap-1.5" onClick={handleArchiveToggle}>
+          <Button size="sm" variant="ghost" className="flex-1 gap-1.5" onClick={handleArchiveToggle}>
             {client?.status === "archived" ? <RotateCcw className="h-3.5 w-3.5" /> : <Archive className="h-3.5 w-3.5" />}
             {client?.status === "archived" ? "Restore" : "Archive"}
           </Button>
         </div>
 
-        {/* Assigned Program */}
-        <div className="rounded-xl border border-border bg-card p-4">
+        <div className="rounded-2xl border border-border bg-card p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Dumbbell className="h-4 w-4 text-primary" />
@@ -193,7 +189,7 @@ export default function ClientProfile() {
           </div>
           {program ? (
             <div>
-              <p className="text-sm font-medium text-foreground">{program.name}</p>
+              <p className="text-sm font-semibold text-foreground">{program.name}</p>
               <p className="text-xs text-muted-foreground">Updated {format(new Date(program.updated_at), "MMM d, yyyy")}</p>
             </div>
           ) : (
@@ -201,9 +197,8 @@ export default function ClientProfile() {
           )}
         </div>
 
-        {/* Weight trend */}
         {weightData.length > 1 && (
-          <div className="rounded-xl border border-border bg-card p-4">
+          <div className="rounded-2xl border border-border bg-card p-4">
             <div className="flex items-center gap-2 mb-3">
               <TrendingUp className="h-4 w-4 text-primary" />
               <h2 className="text-sm font-semibold text-foreground">Weight Trend</h2>
@@ -219,16 +214,15 @@ export default function ClientProfile() {
           </div>
         )}
 
-        {/* Workout history */}
         <div>
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">Workout History</h2>
+          <h2 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-3">Workout History</h2>
           {workouts.length === 0 && <p className="text-sm text-muted-foreground">No workouts yet.</p>}
           <div className="space-y-2">
             {workouts.map((w) => (
               <button
                 key={w.id}
                 onClick={() => viewWorkoutDetail(w.id)}
-                className="flex w-full items-center justify-between rounded-xl border border-border bg-card px-4 py-3 text-left hover:shadow-md active:scale-[0.98] transition-all"
+                className="flex w-full items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 text-left hover:border-primary hover:bg-primary/5 active:scale-[0.98] transition-all"
               >
                 <div>
                   <p className="text-sm font-semibold text-foreground">{w.day_id}</p>
@@ -243,13 +237,12 @@ export default function ClientProfile() {
           </div>
         </div>
 
-        {/* Progress entries */}
         <div>
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">Progress Entries</h2>
+          <h2 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-3">Progress Entries</h2>
           {progress.length === 0 && <p className="text-sm text-muted-foreground">No progress entries yet.</p>}
           <div className="space-y-2">
             {progress.map((p) => (
-              <div key={p.id} className="rounded-xl border border-border bg-card px-4 py-3">
+              <div key={p.id} className="rounded-2xl border border-border bg-card px-4 py-3">
                 <p className="text-sm font-semibold text-foreground">{format(new Date(p.date), "MMM d, yyyy")}</p>
                 {p.bodyweight && <p className="text-xs text-muted-foreground">{p.bodyweight} kg</p>}
                 {p.notes && <p className="text-xs text-muted-foreground mt-1">{p.notes}</p>}

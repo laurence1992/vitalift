@@ -54,8 +54,8 @@ export default function WorkoutSummary() {
     setLoading(false);
   };
 
-  if (loading) return <div className="flex min-h-screen items-center justify-center"><div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>;
-  if (!workout) return <div className="flex min-h-screen items-center justify-center"><p className="text-muted-foreground">Workout not found</p></div>;
+  if (loading) return <div className="flex min-h-screen items-center justify-center bg-background"><div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>;
+  if (!workout) return <div className="flex min-h-screen items-center justify-center bg-background"><p className="text-muted-foreground">Workout not found</p></div>;
 
   const byExercise: Record<string, WorkoutSetRow[]> = {};
   sets.forEach((s) => { if (!byExercise[s.exercise_id]) byExercise[s.exercise_id] = []; byExercise[s.exercise_id].push(s); });
@@ -64,10 +64,10 @@ export default function WorkoutSummary() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <div className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-background/95 backdrop-blur-md px-4 py-3">
-        <button onClick={() => navigate("/workouts")} className="text-muted-foreground"><ArrowLeft className="h-5 w-5" /></button>
+      <div className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-background px-5 py-3">
+        <button onClick={() => navigate("/workouts")} className="text-foreground active:scale-[0.97]"><ArrowLeft className="h-5 w-5" /></button>
         <div>
-          <h1 className="text-base font-bold text-foreground">{dayLabel}</h1>
+          <h1 className="text-sm font-bold text-foreground">{dayLabel}</h1>
           <p className="text-xs text-muted-foreground">
             {format(new Date(workout.date), "EEEE, MMM d, yyyy")}
             {workout.duration_seconds ? ` · ${formatDuration(workout.duration_seconds)}` : ""}
@@ -75,11 +75,11 @@ export default function WorkoutSummary() {
         </div>
       </div>
 
-      <div className="space-y-3 px-4 pt-4">
+      <div className="space-y-3 px-5 pt-4">
         {totalVolume > 0 && (
-          <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-center">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Total Volume</p>
-            <p className="text-2xl font-bold text-primary">{totalVolume.toLocaleString()} kg</p>
+          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-center">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Total Volume</p>
+            <p className="text-3xl font-bold text-primary">{totalVolume.toLocaleString()} kg</p>
           </div>
         )}
 
@@ -94,7 +94,7 @@ export default function WorkoutSummary() {
           );
 
           return (
-            <div key={exId} className="rounded-xl border border-border bg-card p-4">
+            <div key={exId} className="rounded-2xl border border-border bg-card p-4">
               <div className="flex items-center gap-3 mb-3">
                 <div className="flex-1">
                   <p className="text-sm font-semibold text-foreground">{exerciseNames[exId] || exId}</p>
@@ -106,8 +106,8 @@ export default function WorkoutSummary() {
               </div>
               <div className="space-y-1">
                 {exSets.map((s, i) => (
-                  <div key={i} className="flex items-center gap-4 rounded-lg bg-muted/50 px-3 py-1.5 text-sm text-foreground">
-                    <span className="w-8 text-xs font-bold text-muted-foreground">Set {s.set_number}</span>
+                  <div key={i} className="flex items-center gap-4 rounded-xl bg-secondary px-3 py-1.5 text-sm text-foreground">
+                    <span className="w-8 text-[10px] font-bold text-muted-foreground">Set {s.set_number}</span>
                     <span>{s.weight ?? "–"} kg</span>
                     <span>× {s.reps ?? "–"}</span>
                   </div>
@@ -118,8 +118,8 @@ export default function WorkoutSummary() {
         })}
 
         {workout.session_notes && (
-          <div className="rounded-xl border border-border bg-card p-4">
-            <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Notes</p>
+          <div className="rounded-2xl border border-border bg-card p-4">
+            <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Notes</p>
             <p className="text-sm whitespace-pre-wrap text-foreground">{workout.session_notes}</p>
           </div>
         )}
