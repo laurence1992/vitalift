@@ -131,12 +131,13 @@ export default function CoachDashboard() {
       </div>
 
       <div className="px-5 space-y-3">
-        {clients.length === 0 && (
+        {loading ? (
+          <ClientListSkeleton />
+        ) : clients.length === 0 ? (
           <p className="text-center text-muted-foreground text-sm py-8">
             {showArchived ? "No archived clients." : "No clients yet. New signups will appear here automatically."}
           </p>
-        )}
-        {clients.map((c) => (
+        ) : clients.map((c) => (
           <button
             key={c.id}
             onClick={() => navigate(`/coach/client/${c.id}`)}
