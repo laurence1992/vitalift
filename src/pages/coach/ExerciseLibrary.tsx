@@ -70,6 +70,7 @@ export default function ExerciseLibrary({
 
   const load = async () => {
     if (!user) return;
+    setLoadingExercises(true);
     const q = supabase
       .from("coach_exercises")
       .select("*")
