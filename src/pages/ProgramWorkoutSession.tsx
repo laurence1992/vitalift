@@ -59,8 +59,6 @@ export default function ProgramWorkoutSession() {
 
   // Personal bests: exercise_id -> { weight, reps }
   const [personalBests, setPersonalBests] = useState<Record<string, { weight: number; reps: number | null }>>({});
-  // Track which PBs we've already celebrated this session to avoid repeat toasts
-  const celebratedPBs = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     loadDay();
