@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { ExerciseLibrarySkeleton } from "@/components/Skeletons";
 import { exercises as staticExercises } from "@/data/exercises";
 import { resolveExerciseImage } from "@/lib/exercise-image-map";
 
@@ -63,11 +64,13 @@ export default function ExerciseLibrary({
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [seeded, setSeeded] = useState(false);
+  const [loadingExercises, setLoadingExercises] = useState(true);
 
   const [form, setForm] = useState(emptyForm);
 
   const load = async () => {
     if (!user) return;
+    setLoadingExercises(true);
     const q = supabase
       .from("coach_exercises")
       .select("*")
@@ -83,6 +86,7 @@ export default function ExerciseLibrary({
     const { data } = await q;
     const result = (data as CoachExercise[]) || [];
     setExercises(result);
+    setLoadingExercises(false);
 
     if (!seeded && result.length === 0 && !showArchived) {
       setSeeded(true);
@@ -252,10 +256,11 @@ export default function ExerciseLibrary({
       </div>
 
       <div className="space-y-2 max-h-[60vh] overflow-y-auto">
-        {filtered.length === 0 && (
+        {loadingExercises ? (
+          <ExerciseLibrarySkeleton />
+        ) : filtered.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-4">No exercises found.</p>
-        )}
-        {filtered.map((ex) => {
+        ) : filtered.map((ex) => {
           const meta = [ex.category, ex.muscle_group, ex.equipment].filter(Boolean).join(" · ");
           return (
             <div

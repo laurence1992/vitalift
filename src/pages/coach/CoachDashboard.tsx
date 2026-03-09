@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Users, ChevronRight, MessageSquare, Archive, RotateCcw, Trash2 } from "lucide-react";
+import { ClientListSkeleton } from "@/components/Skeletons";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -29,12 +30,14 @@ export default function CoachDashboard() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showArchived, setShowArchived] = useState(false);
   const [archiveTarget, setArchiveTarget] = useState<Client | null>(null);
   const [restoreTarget, setRestoreTarget] = useState<Client | null>(null);
 
   const fetchClients = async () => {
     if (!user) return;
+    setLoading(true);
     const targetStatus = showArchived ? "archived" : "active";
     const { data } = await supabase
       .from("profiles")
@@ -43,6 +46,7 @@ export default function CoachDashboard() {
       .eq("role", "client")
       .eq("status", targetStatus);
     setClients((data as Client[]) || []);
+    setLoading(false);
   };
 
   const reconcileOrphans = async () => {
@@ -127,12 +131,13 @@ export default function CoachDashboard() {
       </div>
 
       <div className="px-5 space-y-3">
-        {clients.length === 0 && (
+        {loading ? (
+          <ClientListSkeleton />
+        ) : clients.length === 0 ? (
           <p className="text-center text-muted-foreground text-sm py-8">
             {showArchived ? "No archived clients." : "No clients yet. New signups will appear here automatically."}
           </p>
-        )}
-        {clients.map((c) => (
+        ) : clients.map((c) => (
           <button
             key={c.id}
             onClick={() => navigate(`/coach/client/${c.id}`)}

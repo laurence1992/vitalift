@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { WorkoutSummarySkeleton } from "@/components/Skeletons";
 import { useAuth } from "@/hooks/useAuth";
 import { format, differenceInDays } from "date-fns";
 
@@ -54,7 +55,7 @@ export default function WorkoutSummary() {
     setLoading(false);
   };
 
-  if (loading) return <div className="flex min-h-screen items-center justify-center bg-background"><div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>;
+  if (loading) return <WorkoutSummarySkeleton />;
   if (!workout) return <div className="flex min-h-screen items-center justify-center bg-background"><p className="text-muted-foreground">Workout not found</p></div>;
 
   const byExercise: Record<string, WorkoutSetRow[]> = {};

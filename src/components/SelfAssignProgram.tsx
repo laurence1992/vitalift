@@ -54,8 +54,16 @@ export default function SelfAssignProgram({ onAssigned }: { onAssigned: () => vo
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      <div className="space-y-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3">
+            <div className="space-y-2 flex-1">
+              <div className="h-3.5 w-32 bg-[#1C1C2E] rounded-xl animate-pulse" />
+              <div className="h-2.5 w-20 bg-[#242438] rounded-xl animate-pulse" />
+            </div>
+            <div className="h-9 w-20 bg-[#1C1C2E] rounded-xl animate-pulse shrink-0 ml-3" />
+          </div>
+        ))}
       </div>
     );
   }

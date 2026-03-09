@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveExerciseImage } from "@/lib/exercise-image-map";
+import { WorkoutSessionSkeleton } from "@/components/Skeletons";
 import { useAuth } from "@/hooks/useAuth";
 
 type SetTarget = {
@@ -289,11 +290,7 @@ export default function ProgramWorkoutSession() {
   };
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
-    );
+    return <WorkoutSessionSkeleton />;
   }
 
   return (
