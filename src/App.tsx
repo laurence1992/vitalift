@@ -29,8 +29,11 @@ function AppRoutes() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="space-y-4 w-full max-w-sm px-8">
+          <div className="h-8 w-32 bg-[#1C1C2E] rounded-xl animate-pulse mx-auto" />
+          <div className="h-4 w-48 bg-[#242438] rounded-xl animate-pulse mx-auto" />
+        </div>
       </div>
     );
   }
