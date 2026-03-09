@@ -64,6 +64,7 @@ export default function ExerciseLibrary({
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [seeded, setSeeded] = useState(false);
+  const [loadingExercises, setLoadingExercises] = useState(true);
 
   const [form, setForm] = useState(emptyForm);
 
