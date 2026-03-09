@@ -86,6 +86,7 @@ export default function ExerciseLibrary({
     const { data } = await q;
     const result = (data as CoachExercise[]) || [];
     setExercises(result);
+    setLoadingExercises(false);
 
     if (!seeded && result.length === 0 && !showArchived) {
       setSeeded(true);
