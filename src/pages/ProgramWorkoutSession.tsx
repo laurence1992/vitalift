@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, ExternalLink, Check, Trophy, Timer } from "lucide-react";
 import { formatCardioInterval } from "@/pages/coach/ExerciseLibrary";
@@ -59,8 +59,6 @@ export default function ProgramWorkoutSession() {
 
   // Personal bests: exercise_id -> { weight, reps }
   const [personalBests, setPersonalBests] = useState<Record<string, { weight: number; reps: number | null }>>({});
-  // Track which PBs we've already celebrated this session to avoid repeat toasts
-  const celebratedPBs = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     loadDay();
@@ -164,52 +162,55 @@ export default function ProgramWorkoutSession() {
     );
   }, [exerciseLogs]);
 
-  const checkAndCelebratePB = useCallback(async (exerciseId: string, exerciseName: string, weight: number, reps: number | null) => {
-    if (!user || weight <= 0) return;
-    const currentPB = personalBests[exerciseId];
-    const isNewPB = !currentPB || weight > currentPB.weight || (weight === currentPB.weight && (reps ?? 0) > (currentPB.reps ?? 0));
-    const celebrateKey = `${exerciseId}-${weight}`;
+  const checkAndSavePBs = async () => {
+    if (!user) return;
+    const newPBs: { exerciseName: string; weight: number }[] = [];
 
-    if (isNewPB && !celebratedPBs.current.has(celebrateKey)) {
-      celebratedPBs.current.add(celebrateKey);
+    for (const ex of exercises) {
+      if (ex.category === "Cardio") continue;
+      const logs = exerciseLogs[ex.id] || [];
+      // Find best set in this session (highest weight, then reps as tiebreaker)
+      let bestWeight = 0;
+      let bestReps = 0;
+      for (const s of logs) {
+        if (s.weight != null && s.weight > 0) {
+          if (s.weight > bestWeight || (s.weight === bestWeight && (s.reps ?? 0) > bestReps)) {
+            bestWeight = s.weight;
+            bestReps = s.reps ?? 0;
+          }
+        }
+      }
+      if (bestWeight <= 0) continue;
 
-      // Update local state immediately
-      setPersonalBests((prev) => ({ ...prev, [exerciseId]: { weight, reps } }));
+      const currentPB = personalBests[ex.exercise_id];
+      const isNewPB = !currentPB || bestWeight > currentPB.weight || (bestWeight === currentPB.weight && bestReps > (currentPB.reps ?? 0));
 
-      // Upsert to database
-      await supabase
-        .from("personal_bests")
-        .upsert(
-          { user_id: user.id, exercise_id: exerciseId, weight, reps, achieved_at: new Date().toISOString() },
-          { onConflict: "user_id,exercise_id" }
-        );
+      if (isNewPB) {
+        newPBs.push({ exerciseName: ex.exercise_name, weight: bestWeight });
+        await supabase
+          .from("personal_bests")
+          .upsert(
+            { user_id: user.id, exercise_id: ex.exercise_id, weight: bestWeight, reps: bestReps, achieved_at: new Date().toISOString() },
+            { onConflict: "user_id,exercise_id" }
+          );
+      }
+    }
 
-      // Celebration toast
+    // Show celebration toasts for all new PBs
+    for (const pb of newPBs) {
       toast({
         title: "🏆 New PB!",
-        description: `${exerciseName} — ${weight}kg`,
+        description: `${pb.exerciseName} — ${pb.weight}kg`,
         className: "border-[#10B981] bg-[#10B981]/10 text-[#10B981] [&>div]:text-[#10B981]",
-        duration: 4000,
+        duration: 5000,
       });
     }
-  }, [user, personalBests, toast]);
+  };
 
   const updateSet = (peId: string, setIdx: number, field: "weight" | "reps", value: string) => {
     setExerciseLogs((prev) => {
       const sets = [...(prev[peId] || [])];
       sets[setIdx] = { ...sets[setIdx], [field]: value === "" ? null : Number(value) };
-
-      // Check for PB when weight changes
-      if (field === "weight" || field === "reps") {
-        const updatedSet = sets[setIdx];
-        if (updatedSet.weight != null && updatedSet.weight > 0) {
-          const ex = exercises.find((e) => e.id === peId);
-          if (ex && ex.category !== "Cardio") {
-            checkAndCelebratePB(ex.exercise_id, ex.exercise_name, updatedSet.weight, updatedSet.reps);
-          }
-        }
-      }
-
       return { ...prev, [peId]: sets };
     });
   };
@@ -250,6 +251,9 @@ export default function ProgramWorkoutSession() {
         await supabase.from("workout_sets").insert(setRows);
       }
     }
+
+    // Check and save personal bests before navigating
+    await checkAndSavePBs();
 
     navigate("/workouts");
   };
