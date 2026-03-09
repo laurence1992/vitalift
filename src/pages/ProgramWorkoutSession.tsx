@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveExerciseImage } from "@/lib/exercise-image-map";
+import { WorkoutSessionSkeleton } from "@/components/Skeletons";
 import { useAuth } from "@/hooks/useAuth";
 
 type SetTarget = {
