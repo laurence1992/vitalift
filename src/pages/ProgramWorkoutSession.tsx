@@ -198,8 +198,8 @@ export default function ProgramWorkoutSession() {
     );
   }, [exerciseLogs]);
 
-  const checkAndSavePBs = async () => {
-    if (!user) return;
+  const checkAndSavePBs = async (): Promise<{ exerciseName: string; weight: number }[]> => {
+    if (!user) return [];
     const newPBs: { exerciseName: string; weight: number }[] = [];
 
     for (const ex of exercises) {
@@ -231,14 +231,7 @@ export default function ProgramWorkoutSession() {
       }
     }
 
-    for (const pb of newPBs) {
-      toast({
-        title: "🏆 New PB!",
-        description: `${pb.exerciseName} — ${pb.weight}kg`,
-        className: "border-[#10B981] bg-[#10B981]/10 text-[#10B981] [&>div]:text-[#10B981]",
-        duration: 5000,
-      });
-    }
+    return newPBs;
   };
 
   const updateSet = (peId: string, setIdx: number, field: "weight" | "reps", value: string) => {
@@ -289,8 +282,10 @@ export default function ProgramWorkoutSession() {
       }
     }
 
-    await checkAndSavePBs();
-    navigate("/workouts");
+    const pbs = await checkAndSavePBs();
+    setFinalDuration(durationSeconds);
+    setCompletionPBs(pbs);
+    setShowCompletion(true);
   };
 
   if (loading) {
