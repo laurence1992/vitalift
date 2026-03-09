@@ -188,7 +188,7 @@ export default function ProgramWorkoutSession() {
       }
     }
 
-    navigate("/history");
+    navigate("/workouts");
   };
 
   if (loading) {
@@ -203,7 +203,7 @@ export default function ProgramWorkoutSession() {
     <div className="min-h-screen bg-background pb-8">
       {/* Top bar */}
       <div className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-background px-5 py-3">
-        <button onClick={() => navigate("/")} className="text-foreground active:scale-[0.97]">
+        <button onClick={() => navigate(-1)} className="text-foreground active:scale-[0.97]">
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div className="flex-1">

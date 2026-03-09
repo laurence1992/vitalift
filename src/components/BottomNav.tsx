@@ -13,7 +13,8 @@ const clientTabs = [
 
 const coachTabs = [
   { path: "/", icon: Users, label: "Clients" },
-  { path: "/coach/exercises", icon: Dumbbell, label: "Exercises" },
+  { path: "/training", icon: Dumbbell, label: "Training" },
+  { path: "/coach/exercises", icon: ClipboardList, label: "Exercises" },
   { path: "/inbox", icon: MessageSquare, label: "Inbox", badge: true },
   { path: "/settings", icon: Settings, label: "Settings" },
 ];
