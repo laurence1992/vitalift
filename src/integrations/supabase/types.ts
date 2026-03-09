@@ -255,6 +255,48 @@ export type Database = {
           },
         ]
       }
+      personal_bests: {
+        Row: {
+          achieved_at: string
+          exercise_id: string
+          id: string
+          reps: number | null
+          user_id: string
+          weight: number
+        }
+        Insert: {
+          achieved_at?: string
+          exercise_id: string
+          id?: string
+          reps?: number | null
+          user_id: string
+          weight: number
+        }
+        Update: {
+          achieved_at?: string
+          exercise_id?: string
+          id?: string
+          reps?: number | null
+          user_id?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personal_bests_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "coach_exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personal_bests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           archived_at: string | null
