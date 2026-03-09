@@ -465,6 +465,56 @@ export default function ProgramWorkoutSession() {
           </>
         )}
       </div>
+
+      {/* Workout Completion Modal */}
+      {showCompletion && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: "#0D0D18" }}>
+          <div className="flex flex-col items-center text-center px-8 max-w-sm w-full">
+            <Trophy className="h-16 w-16 text-primary mb-6" />
+
+            <h1 className="text-2xl font-bold text-foreground mb-2">Workout Complete 💪</h1>
+
+            <p className="text-sm text-muted-foreground mb-6">
+              Duration: {formatElapsed(finalDuration)}
+            </p>
+
+            {completionPBs.length > 0 ? (
+              <div className="w-full mb-8">
+                <h2 className="text-lg font-bold mb-1" style={{ color: "#10B981" }}>
+                  Personal Bests Smashed!
+                </h2>
+                <p className="text-sm text-muted-foreground mb-4">
+                  You crushed {completionPBs.length} personal best{completionPBs.length > 1 ? "s" : ""} today!
+                </p>
+                <div className="space-y-2">
+                  {completionPBs.map((pb, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between rounded-xl px-4 py-3"
+                      style={{ backgroundColor: "rgba(16, 185, 129, 0.1)", border: "1px solid rgba(16, 185, 129, 0.25)" }}
+                    >
+                      <span className="text-sm font-semibold text-foreground">{pb.exerciseName}</span>
+                      <span className="text-sm font-bold" style={{ color: "#10B981" }}>{pb.weight}kg</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground mb-8">
+                Great effort — keep pushing and the records will fall! 🔥
+              </p>
+            )}
+
+            <Button
+              onClick={() => navigate("/workouts")}
+              className="w-full h-14 text-base font-semibold"
+              size="lg"
+            >
+              Done
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
