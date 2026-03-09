@@ -55,7 +55,6 @@ export default function ProgramWorkoutSession() {
   const { dayId } = useParams<{ dayId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { toast } = useToast();
 
   const [dayLabel, setDayLabel] = useState("");
   const [dayNote, setDayNote] = useState("");
