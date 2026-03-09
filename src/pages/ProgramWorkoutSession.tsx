@@ -73,6 +73,11 @@ export default function ProgramWorkoutSession() {
   // Personal bests
   const [personalBests, setPersonalBests] = useState<Record<string, { weight: number; reps: number | null }>>({});
 
+  // Completion modal state
+  const [showCompletion, setShowCompletion] = useState(false);
+  const [completionPBs, setCompletionPBs] = useState<{ exerciseName: string; weight: number }[]>([]);
+  const [finalDuration, setFinalDuration] = useState(0);
+
   useEffect(() => {
     loadDay();
     if (user) loadPersonalBests();
