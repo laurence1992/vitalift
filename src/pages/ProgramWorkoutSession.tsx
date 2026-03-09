@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, ExternalLink, Check, Trophy, Timer } from "lucide-react";
 import { formatCardioInterval } from "@/pages/coach/ExerciseLibrary";
@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveExerciseImage } from "@/lib/exercise-image-map";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 type SetTarget = {
   set_index: number;
@@ -45,6 +46,7 @@ export default function ProgramWorkoutSession() {
   const { dayId } = useParams<{ dayId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast } = useToast();
 
   const [dayLabel, setDayLabel] = useState("");
   const [dayNote, setDayNote] = useState("");
@@ -55,9 +57,28 @@ export default function ProgramWorkoutSession() {
   const [programId, setProgramId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Personal bests: exercise_id -> { weight, reps }
+  const [personalBests, setPersonalBests] = useState<Record<string, { weight: number; reps: number | null }>>({});
+  // Track which PBs we've already celebrated this session to avoid repeat toasts
+  const celebratedPBs = useRef<Set<string>>(new Set());
+
   useEffect(() => {
     loadDay();
-  }, [dayId]);
+    if (user) loadPersonalBests();
+  }, [dayId, user]);
+
+  const loadPersonalBests = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("personal_bests")
+      .select("exercise_id, weight, reps")
+      .eq("user_id", user.id);
+    const map: Record<string, { weight: number; reps: number | null }> = {};
+    for (const pb of data || []) {
+      map[pb.exercise_id] = { weight: Number(pb.weight), reps: pb.reps };
+    }
+    setPersonalBests(map);
+  };
 
   const loadDay = async () => {
     if (!dayId) return;
@@ -143,10 +164,52 @@ export default function ProgramWorkoutSession() {
     );
   }, [exerciseLogs]);
 
+  const checkAndCelebratePB = useCallback(async (exerciseId: string, exerciseName: string, weight: number, reps: number | null) => {
+    if (!user || weight <= 0) return;
+    const currentPB = personalBests[exerciseId];
+    const isNewPB = !currentPB || weight > currentPB.weight || (weight === currentPB.weight && (reps ?? 0) > (currentPB.reps ?? 0));
+    const celebrateKey = `${exerciseId}-${weight}`;
+
+    if (isNewPB && !celebratedPBs.current.has(celebrateKey)) {
+      celebratedPBs.current.add(celebrateKey);
+
+      // Update local state immediately
+      setPersonalBests((prev) => ({ ...prev, [exerciseId]: { weight, reps } }));
+
+      // Upsert to database
+      await supabase
+        .from("personal_bests")
+        .upsert(
+          { user_id: user.id, exercise_id: exerciseId, weight, reps, achieved_at: new Date().toISOString() },
+          { onConflict: "user_id,exercise_id" }
+        );
+
+      // Celebration toast
+      toast({
+        title: "🏆 New PB!",
+        description: `${exerciseName} — ${weight}kg`,
+        className: "border-[#10B981] bg-[#10B981]/10 text-[#10B981] [&>div]:text-[#10B981]",
+        duration: 4000,
+      });
+    }
+  }, [user, personalBests, toast]);
+
   const updateSet = (peId: string, setIdx: number, field: "weight" | "reps", value: string) => {
     setExerciseLogs((prev) => {
       const sets = [...(prev[peId] || [])];
       sets[setIdx] = { ...sets[setIdx], [field]: value === "" ? null : Number(value) };
+
+      // Check for PB when weight changes
+      if (field === "weight" || field === "reps") {
+        const updatedSet = sets[setIdx];
+        if (updatedSet.weight != null && updatedSet.weight > 0) {
+          const ex = exercises.find((e) => e.id === peId);
+          if (ex && ex.category !== "Cardio") {
+            checkAndCelebratePB(ex.exercise_id, ex.exercise_name, updatedSet.weight, updatedSet.reps);
+          }
+        }
+      }
+
       return { ...prev, [peId]: sets };
     });
   };
