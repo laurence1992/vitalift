@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, ExternalLink, Check, Trophy, Timer } from "lucide-react";
+import { ArrowLeft, ExternalLink, Check, Trophy, Timer, Play } from "lucide-react";
 import { formatCardioInterval } from "@/pages/coach/ExerciseLibrary";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,6 +42,16 @@ type SetLog = {
   reps: number | null;
 };
 
+function formatElapsed(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  const mm = String(m).padStart(2, "0");
+  const ss = String(s).padStart(2, "0");
+  if (h > 0) return `${h}:${mm}:${ss}`;
+  return `${mm}:${ss}`;
+}
+
 export default function ProgramWorkoutSession() {
   const { dayId } = useParams<{ dayId: string }>();
   const navigate = useNavigate();
@@ -53,17 +63,40 @@ export default function ProgramWorkoutSession() {
   const [exercises, setExercises] = useState<ExerciseData[]>([]);
   const [exerciseLogs, setExerciseLogs] = useState<Record<string, SetLog[]>>({});
   const [sessionNotes, setSessionNotes] = useState("");
-  const [startTime] = useState(() => new Date().toISOString());
   const [programId, setProgramId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Personal bests: exercise_id -> { weight, reps }
+  // Timer state
+  const [workoutStarted, setWorkoutStarted] = useState(false);
+  const [startTime, setStartTime] = useState<string | null>(null);
+  const [elapsed, setElapsed] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Personal bests
   const [personalBests, setPersonalBests] = useState<Record<string, { weight: number; reps: number | null }>>({});
 
   useEffect(() => {
     loadDay();
     if (user) loadPersonalBests();
   }, [dayId, user]);
+
+  // Timer tick
+  useEffect(() => {
+    if (workoutStarted && startTime) {
+      timerRef.current = setInterval(() => {
+        setElapsed(Math.floor((Date.now() - new Date(startTime).getTime()) / 1000));
+      }, 1000);
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [workoutStarted, startTime]);
+
+  const handleStartWorkout = () => {
+    const now = new Date().toISOString();
+    setStartTime(now);
+    setWorkoutStarted(true);
+  };
 
   const loadPersonalBests = async () => {
     if (!user) return;
@@ -169,7 +202,6 @@ export default function ProgramWorkoutSession() {
     for (const ex of exercises) {
       if (ex.category === "Cardio") continue;
       const logs = exerciseLogs[ex.id] || [];
-      // Find best set in this session (highest weight, then reps as tiebreaker)
       let bestWeight = 0;
       let bestReps = 0;
       for (const s of logs) {
@@ -196,7 +228,6 @@ export default function ProgramWorkoutSession() {
       }
     }
 
-    // Show celebration toasts for all new PBs
     for (const pb of newPBs) {
       toast({
         title: "🏆 New PB!",
@@ -216,7 +247,10 @@ export default function ProgramWorkoutSession() {
   };
 
   const finishWorkout = async () => {
-    if (!user || !dayId) return;
+    if (!user || !dayId || !startTime) return;
+
+    // Stop timer
+    if (timerRef.current) clearInterval(timerRef.current);
 
     const endTime = new Date().toISOString();
     const durationSeconds = Math.round((new Date(endTime).getTime() - new Date(startTime).getTime()) / 1000);
@@ -252,9 +286,7 @@ export default function ProgramWorkoutSession() {
       }
     }
 
-    // Check and save personal bests before navigating
     await checkAndSavePBs();
-
     navigate("/workouts");
   };
 
@@ -269,17 +301,41 @@ export default function ProgramWorkoutSession() {
   return (
     <div className="min-h-screen bg-background pb-8">
       {/* Top bar */}
-      <div className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-background px-5 py-3">
-        <button onClick={() => navigate(-1)} className="text-foreground active:scale-[0.97]">
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <div className="flex-1">
-          <h1 className="text-sm font-bold text-foreground">{dayLabel}</h1>
-          <p className="text-xs text-muted-foreground">{exercises.length} exercises</p>
+      <div className="sticky top-0 z-40 border-b border-border bg-background">
+        <div className="flex items-center gap-3 px-5 py-3">
+          <button onClick={() => navigate(-1)} className="text-foreground active:scale-[0.97]">
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <div className="flex-1">
+            <h1 className="text-sm font-bold text-foreground">{dayLabel}</h1>
+            <p className="text-xs text-muted-foreground">{exercises.length} exercises</p>
+          </div>
         </div>
+
+        {/* Sticky timer bar — visible once workout started */}
+        {workoutStarted && (
+          <div className="flex items-center justify-center gap-2 border-t border-primary/20 bg-primary/5 px-5 py-2">
+            <Timer className="h-4 w-4 text-primary" />
+            <span className="text-lg font-bold tabular-nums text-primary tracking-wider">
+              {formatElapsed(elapsed)}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="space-y-4 px-5 pt-4">
+        {/* Start Workout button — shown before workout begins */}
+        {!workoutStarted && (
+          <Button
+            onClick={handleStartWorkout}
+            className="w-full h-14 text-base font-semibold gap-2"
+            size="lg"
+          >
+            <Play className="h-5 w-5" />
+            Start Workout
+          </Button>
+        )}
+
         {dayNote && (
           <p className="text-xs text-primary italic text-center rounded-2xl bg-primary/5 border border-primary/20 px-3 py-2">
             {dayNote}
@@ -352,6 +408,7 @@ export default function ProgramWorkoutSession() {
                               value={set.weight ?? ""}
                               onChange={(e) => updateSet(ex.id, i, "weight", e.target.value)}
                               className="h-10 text-center"
+                              disabled={!workoutStarted}
                             />
                             <Input
                               type="number"
@@ -360,6 +417,7 @@ export default function ProgramWorkoutSession() {
                               value={set.reps ?? ""}
                               onChange={(e) => updateSet(ex.id, i, "reps", e.target.value)}
                               className="h-10 text-center"
+                              disabled={!workoutStarted}
                             />
                           </div>
                           {setTarget?.coach_note && (
@@ -383,27 +441,31 @@ export default function ProgramWorkoutSession() {
           );
         })}
 
-        <div className="rounded-2xl border border-border bg-card p-4">
-          <label className="mb-2 block text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Session Notes</label>
-          <Textarea
-            value={sessionNotes}
-            onChange={(e) => setSessionNotes(e.target.value)}
-            placeholder="How did it feel? Any PRs?"
-            className="min-h-[80px]"
-          />
-        </div>
+        {workoutStarted && (
+          <>
+            <div className="rounded-2xl border border-border bg-card p-4">
+              <label className="mb-2 block text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Session Notes</label>
+              <Textarea
+                value={sessionNotes}
+                onChange={(e) => setSessionNotes(e.target.value)}
+                placeholder="How did it feel? Any PRs?"
+                className="min-h-[80px]"
+              />
+            </div>
 
-        {totalVolume > 0 && (
-          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-center">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Total Volume</p>
-            <p className="text-3xl font-bold text-primary">{totalVolume.toLocaleString()} kg</p>
-          </div>
+            {totalVolume > 0 && (
+              <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-center">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Total Volume</p>
+                <p className="text-3xl font-bold text-primary">{totalVolume.toLocaleString()} kg</p>
+              </div>
+            )}
+
+            <Button onClick={finishWorkout} className="w-full h-12 text-base font-semibold" size="lg">
+              <Check className="mr-2 h-5 w-5" />
+              Finish Workout
+            </Button>
+          </>
         )}
-
-        <Button onClick={finishWorkout} className="w-full h-12 text-base font-semibold" size="lg">
-          <Check className="mr-2 h-5 w-5" />
-          Finish Workout
-        </Button>
       </div>
     </div>
   );
