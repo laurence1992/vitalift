@@ -62,7 +62,8 @@ function AppRoutes() {
         {/* Home - role dependent */}
         <Route path="/" element={isCoach ? <CoachDashboard /> : <Index />} />
 
-        {/* Client routes */}
+        {/* Client & Coach training routes */}
+        <Route path="/training" element={<Index />} />
         <Route path="/workouts" element={<History />} />
         <Route path="/history/:workoutId" element={<WorkoutSummary />} />
         <Route path="/exercises" element={<Exercises />} />

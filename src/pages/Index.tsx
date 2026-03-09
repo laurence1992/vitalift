@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import SelfAssignProgram from "@/components/SelfAssignProgram";
 import {
   Dumbbell, Footprints, Moon, Weight, Percent, Camera,
   Utensils, HeartPulse, Activity, Plus, X,
@@ -77,7 +78,7 @@ function Sparkline({ data }: { data: { v: number }[] }) {
 
 export default function Index() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
 
   const [assignedProgram, setAssignedProgram] = useState<AssignedProgram | null>(null);
   const [loading,         setLoading]         = useState(true);
@@ -361,6 +362,13 @@ export default function Index() {
                 </button>
               ))}
             </div>
+          </div>
+        ) : profile?.role === "coach" ? (
+          <div>
+            <h2 className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              Assign a Program
+            </h2>
+            <SelfAssignProgram onAssigned={() => { sessionStorage.removeItem(CACHE_KEY); loadAssignedProgram(); }} />
           </div>
         ) : (
           <div className="rounded-2xl border border-border bg-card p-6 text-center">
