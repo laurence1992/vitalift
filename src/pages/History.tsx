@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Clock, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { format } from "date-fns";
+import { format, differenceInDays } from "date-fns";
 
 type WorkoutRow = {
   id: string;
@@ -57,6 +57,15 @@ export default function History() {
     return `${m}m`;
   };
 
+  const formatWorkoutDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const daysAgo = differenceInDays(new Date(), date);
+    if (daysAgo < 7) {
+      return format(date, "EEEE, d MMM");
+    }
+    return format(date, "d MMMM yyyy");
+  };
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -91,7 +100,7 @@ export default function History() {
               <div>
                 <p className="text-sm font-semibold text-foreground">{dayLabels[w.day_id] || w.day_id}</p>
                 <p className="text-xs text-muted-foreground">
-                  {format(new Date(w.date), "EEEE, MMM d, yyyy")}
+                  {formatWorkoutDate(w.date)}
                   {w.duration_seconds ? ` · ${formatDuration(w.duration_seconds)}` : ""}
                 </p>
               </div>

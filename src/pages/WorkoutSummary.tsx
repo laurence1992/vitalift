@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { format } from "date-fns";
+import { format, differenceInDays } from "date-fns";
 
 type WorkoutRow = {
   id: string;
@@ -61,6 +61,11 @@ export default function WorkoutSummary() {
   sets.forEach((s) => { if (!byExercise[s.exercise_id]) byExercise[s.exercise_id] = []; byExercise[s.exercise_id].push(s); });
   const totalVolume = sets.reduce((sum, s) => sum + (s.weight ?? 0) * (s.reps ?? 0), 0);
   const formatDuration = (seconds: number | null) => { if (!seconds) return ""; return `${Math.floor(seconds / 60)}m`; };
+  const formatWorkoutDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const daysAgo = differenceInDays(new Date(), date);
+    return daysAgo < 7 ? format(date, "EEEE, d MMM") : format(date, "d MMMM yyyy");
+  };
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -69,7 +74,7 @@ export default function WorkoutSummary() {
         <div>
           <h1 className="text-sm font-bold text-foreground">{dayLabel}</h1>
           <p className="text-xs text-muted-foreground">
-            {format(new Date(workout.date), "EEEE, MMM d, yyyy")}
+            {formatWorkoutDate(workout.date)}
             {workout.duration_seconds ? ` · ${formatDuration(workout.duration_seconds)}` : ""}
           </p>
         </div>
