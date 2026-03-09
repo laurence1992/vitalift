@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { ExerciseLibrarySkeleton } from "@/components/Skeletons";
 import { exercises as staticExercises } from "@/data/exercises";
 import { resolveExerciseImage } from "@/lib/exercise-image-map";
 
