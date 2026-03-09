@@ -8,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveExerciseImage } from "@/lib/exercise-image-map";
 import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
 
 type SetTarget = {
   set_index: number;
@@ -56,7 +55,6 @@ export default function ProgramWorkoutSession() {
   const { dayId } = useParams<{ dayId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { toast } = useToast();
 
   const [dayLabel, setDayLabel] = useState("");
   const [dayNote, setDayNote] = useState("");
@@ -74,6 +72,11 @@ export default function ProgramWorkoutSession() {
 
   // Personal bests
   const [personalBests, setPersonalBests] = useState<Record<string, { weight: number; reps: number | null }>>({});
+
+  // Completion modal state
+  const [showCompletion, setShowCompletion] = useState(false);
+  const [completionPBs, setCompletionPBs] = useState<{ exerciseName: string; weight: number }[]>([]);
+  const [finalDuration, setFinalDuration] = useState(0);
 
   useEffect(() => {
     loadDay();
@@ -195,8 +198,8 @@ export default function ProgramWorkoutSession() {
     );
   }, [exerciseLogs]);
 
-  const checkAndSavePBs = async () => {
-    if (!user) return;
+  const checkAndSavePBs = async (): Promise<{ exerciseName: string; weight: number }[]> => {
+    if (!user) return [];
     const newPBs: { exerciseName: string; weight: number }[] = [];
 
     for (const ex of exercises) {
@@ -228,14 +231,7 @@ export default function ProgramWorkoutSession() {
       }
     }
 
-    for (const pb of newPBs) {
-      toast({
-        title: "🏆 New PB!",
-        description: `${pb.exerciseName} — ${pb.weight}kg`,
-        className: "border-[#10B981] bg-[#10B981]/10 text-[#10B981] [&>div]:text-[#10B981]",
-        duration: 5000,
-      });
-    }
+    return newPBs;
   };
 
   const updateSet = (peId: string, setIdx: number, field: "weight" | "reps", value: string) => {
@@ -286,8 +282,10 @@ export default function ProgramWorkoutSession() {
       }
     }
 
-    await checkAndSavePBs();
-    navigate("/workouts");
+    const pbs = await checkAndSavePBs();
+    setFinalDuration(durationSeconds);
+    setCompletionPBs(pbs);
+    setShowCompletion(true);
   };
 
   if (loading) {
@@ -467,6 +465,56 @@ export default function ProgramWorkoutSession() {
           </>
         )}
       </div>
+
+      {/* Workout Completion Modal */}
+      {showCompletion && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: "#0D0D18" }}>
+          <div className="flex flex-col items-center text-center px-8 max-w-sm w-full">
+            <Trophy className="h-16 w-16 text-primary mb-6" />
+
+            <h1 className="text-2xl font-bold text-foreground mb-2">Workout Complete 💪</h1>
+
+            <p className="text-sm text-muted-foreground mb-6">
+              Duration: {formatElapsed(finalDuration)}
+            </p>
+
+            {completionPBs.length > 0 ? (
+              <div className="w-full mb-8">
+                <h2 className="text-lg font-bold mb-1" style={{ color: "#10B981" }}>
+                  Personal Bests Smashed!
+                </h2>
+                <p className="text-sm text-muted-foreground mb-4">
+                  You crushed {completionPBs.length} personal best{completionPBs.length > 1 ? "s" : ""} today!
+                </p>
+                <div className="space-y-2">
+                  {completionPBs.map((pb, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between rounded-xl px-4 py-3"
+                      style={{ backgroundColor: "rgba(16, 185, 129, 0.1)", border: "1px solid rgba(16, 185, 129, 0.25)" }}
+                    >
+                      <span className="text-sm font-semibold text-foreground">{pb.exerciseName}</span>
+                      <span className="text-sm font-bold" style={{ color: "#10B981" }}>{pb.weight}kg</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground mb-8">
+                Great effort — keep pushing and the records will fall! 🔥
+              </p>
+            )}
+
+            <Button
+              onClick={() => navigate("/workouts")}
+              className="w-full h-14 text-base font-semibold"
+              size="lg"
+            >
+              Done
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
