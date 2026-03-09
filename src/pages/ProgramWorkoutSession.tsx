@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, ExternalLink, Check, Trophy, Timer } from "lucide-react";
 import { formatCardioInterval } from "@/pages/coach/ExerciseLibrary";
