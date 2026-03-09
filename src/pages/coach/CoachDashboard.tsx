@@ -30,6 +30,7 @@ export default function CoachDashboard() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showArchived, setShowArchived] = useState(false);
   const [archiveTarget, setArchiveTarget] = useState<Client | null>(null);
   const [restoreTarget, setRestoreTarget] = useState<Client | null>(null);
