@@ -37,6 +37,7 @@ export default function CoachDashboard() {
 
   const fetchClients = async () => {
     if (!user) return;
+    setLoading(true);
     const targetStatus = showArchived ? "archived" : "active";
     const { data } = await supabase
       .from("profiles")
@@ -45,6 +46,7 @@ export default function CoachDashboard() {
       .eq("role", "client")
       .eq("status", targetStatus);
     setClients((data as Client[]) || []);
+    setLoading(false);
   };
 
   const reconcileOrphans = async () => {
