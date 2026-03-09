@@ -148,8 +148,10 @@ export default function UpdatePassword() {
           <p className="text-muted-foreground text-xs">Set your new password</p>
         </div>
         {!ready ? (
-          <div className="flex justify-center py-8">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <div className="space-y-4 py-4">
+            <div className="h-12 bg-[#1C1C2E] rounded-xl animate-pulse" />
+            <div className="h-12 bg-[#1C1C2E] rounded-xl animate-pulse" />
+            <div className="h-12 bg-[#242438] rounded-xl animate-pulse" />
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
