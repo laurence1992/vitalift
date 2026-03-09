@@ -256,10 +256,11 @@ export default function ExerciseLibrary({
       </div>
 
       <div className="space-y-2 max-h-[60vh] overflow-y-auto">
-        {filtered.length === 0 && (
+        {loadingExercises ? (
+          <ExerciseLibrarySkeleton />
+        ) : filtered.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-4">No exercises found.</p>
-        )}
-        {filtered.map((ex) => {
+        ) : filtered.map((ex) => {
           const meta = [ex.category, ex.muscle_group, ex.equipment].filter(Boolean).join(" · ");
           return (
             <div
