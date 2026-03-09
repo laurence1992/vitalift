@@ -8,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveExerciseImage } from "@/lib/exercise-image-map";
 import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
 
 type SetTarget = {
   set_index: number;
