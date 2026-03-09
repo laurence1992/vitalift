@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Clock, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { HistorySkeleton } from "@/components/Skeletons";
 import { format, differenceInDays } from "date-fns";
 
 type WorkoutRow = {
