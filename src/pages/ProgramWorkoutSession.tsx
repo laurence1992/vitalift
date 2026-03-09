@@ -254,6 +254,9 @@ export default function ProgramWorkoutSession() {
       }
     }
 
+    // Check and save personal bests before navigating
+    await checkAndSavePBs();
+
     navigate("/workouts");
   };
 
