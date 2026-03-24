@@ -4,17 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dumbbell } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
-const COACH_EMAILS = ["larry92roche@gmail.com"];
-
-async function enforceCoachRole(userId: string) {
-  const { error } = await supabase
-    .from("profiles")
-    .update({ role: "coach" as any })
-    .eq("id", userId);
-  if (error) console.error("Failed to enforce coach role:", error);
-}
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -25,9 +16,8 @@ export default function Auth() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [fixingCoach, setFixingCoach] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
+  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,9 +38,6 @@ export default function Auth() {
           console.error("Sign in error:", error);
           setError(error.message);
         } else if (data.user) {
-          if (COACH_EMAILS.includes(email.toLowerCase())) {
-            await enforceCoachRole(data.user.id);
-          }
           toast({ title: "Signed in successfully!" });
         }
       } else {
@@ -69,9 +56,6 @@ export default function Auth() {
           setMessage("Check your email for a confirmation link, then sign in.");
           toast({ title: "Account created!", description: "Please confirm your email." });
         } else if (data.session && data.user) {
-          if (COACH_EMAILS.includes(email.toLowerCase())) {
-            await enforceCoachRole(data.user.id);
-          }
           toast({ title: "Account created & signed in!" });
         }
       }
@@ -82,31 +66,6 @@ export default function Auth() {
     setLoading(false);
   };
 
-  const handleFixCoachAccess = async () => {
-    setFixingCoach(true);
-    setError("");
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setError("You must be signed in first. Sign in, then click this again.");
-        setFixingCoach(false);
-        return;
-      }
-      if (!COACH_EMAILS.includes(user.email?.toLowerCase() ?? "")) {
-        setError("Your email is not in the coach list.");
-        setFixingCoach(false);
-        return;
-      }
-      await enforceCoachRole(user.id);
-      toast({ title: "Coach access restored!" });
-      navigate("/");
-      window.location.reload();
-    } catch (err: any) {
-      console.error("Fix coach error:", err);
-      setError("Failed to fix coach access.");
-    }
-    setFixingCoach(false);
-  };
 
   return (
     <div className="flex min-h-screen items-center justify-center px-5 bg-background">
@@ -185,15 +144,6 @@ export default function Auth() {
           </button>
         </p>
 
-        <div className="text-center pt-2 border-t border-border">
-          <button
-            onClick={handleFixCoachAccess}
-            disabled={fixingCoach}
-            className="text-xs text-muted-foreground hover:text-primary hover:underline"
-          >
-            {fixingCoach ? "Fixing..." : "Fix my coach access"}
-          </button>
-        </div>
       </div>
     </div>
   );
