@@ -165,56 +165,65 @@ export default function CoachDashboard() {
         </Button>
       </div>
 
-      <div className="px-5 space-y-3">
+      <div className="px-5 space-y-4">
         {loading ? (
           <ClientListSkeleton />
         ) : clients.length === 0 ? (
           <p className="text-center text-muted-foreground text-sm py-8">
             {showArchived ? "No archived clients." : "No clients yet. New signups will appear here automatically."}
           </p>
-        ) : clients.map((c) => (
-          <button
-            key={c.id}
-            onClick={() => navigate(`/coach/client/${c.id}`)}
-            className="flex w-full items-center justify-between rounded-2xl border border-border bg-card px-4 py-4 text-left transition-all hover:border-primary hover:bg-primary/5 active:scale-[0.98]"
-          >
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold truncate text-foreground">{c.name && c.name.trim() ? c.name : "Unnamed Client"}</p>
-            </div>
-            <div className="flex items-center gap-1.5 ml-2 shrink-0">
-              <Button
-                size="icon"
-                className="h-8 w-8"
-                onClick={(e) => { e.stopPropagation(); handleMessage(c.id); }}
-                title="Message"
-              >
-                <MessageSquare className="h-4 w-4" />
-              </Button>
-              {showArchived ? (
+        ) : clients.map((c) => {
+          const displayName = c.name && c.name.trim() ? c.name : "Unnamed Client";
+          const initials = displayName.split(" ").map(w => w[0]?.toUpperCase() || "").join("").slice(0, 2);
+          return (
+            <button
+              key={c.id}
+              onClick={() => navigate(`/coach/client/${c.id}`)}
+              className="flex w-full items-center gap-3 rounded-2xl border border-border/40 bg-card px-4 py-5 text-left transition-all hover:border-primary hover:bg-primary/5 active:scale-[0.98]"
+            >
+              <div className="h-10 w-10 shrink-0 rounded-full bg-primary/20 flex items-center justify-center">
+                <span className="text-sm font-bold text-primary">{initials}</span>
+              </div>
+              <div className="flex-1 min-w-0 flex flex-col">
+                <p className="text-sm font-semibold truncate text-foreground capitalize">{displayName}</p>
+                <p className="text-xs text-muted-foreground">{showArchived ? "Archived client" : "Active client"}</p>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0">
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="h-8 w-8"
-                  onClick={(e) => { e.stopPropagation(); setRestoreTarget(c); }}
-                  title="Restore"
+                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                  onClick={(e) => { e.stopPropagation(); handleMessage(c.id); }}
+                  title="Message"
                 >
-                  <RotateCcw className="h-4 w-4" />
+                  <MessageSquare className="h-4 w-4" />
                 </Button>
-              ) : (
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-8 w-8"
-                  onClick={(e) => { e.stopPropagation(); setArchiveTarget(c); }}
-                  title="Archive"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              )}
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            </div>
-          </button>
-        ))}
+                {showArchived ? (
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                    onClick={(e) => { e.stopPropagation(); setRestoreTarget(c); }}
+                    title="Restore"
+                  >
+                    <RotateCcw className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                    onClick={(e) => { e.stopPropagation(); setArchiveTarget(c); }}
+                    title="Archive"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </button>
+          );
+        })}
       </div>
 
       <AlertDialog open={!!archiveTarget} onOpenChange={() => setArchiveTarget(null)}>
