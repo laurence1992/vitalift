@@ -25,6 +25,9 @@ type Client = {
   status: string;
 };
 
+const CACHE_KEY = "vitalift_coach_clients";
+const CACHE_TTL = 60_000;
+
 export default function CoachDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -35,9 +38,32 @@ export default function CoachDashboard() {
   const [archiveTarget, setArchiveTarget] = useState<Client | null>(null);
   const [restoreTarget, setRestoreTarget] = useState<Client | null>(null);
 
+  const cacheKey = (archived: boolean) => `${CACHE_KEY}_${archived ? "archived" : "active"}`;
+
+  const readCache = (archived: boolean): Client[] | null => {
+    try {
+      const raw = sessionStorage.getItem(cacheKey(archived));
+      if (!raw) return null;
+      const { ts, data } = JSON.parse(raw);
+      if (Date.now() - ts > CACHE_TTL) return null;
+      return data;
+    } catch { return null; }
+  };
+
+  const writeCache = (archived: boolean, data: Client[]) => {
+    try { sessionStorage.setItem(cacheKey(archived), JSON.stringify({ ts: Date.now(), data })); }
+    catch { /* storage full */ }
+  };
+
+  const invalidateCache = () => {
+    try {
+      sessionStorage.removeItem(cacheKey(true));
+      sessionStorage.removeItem(cacheKey(false));
+    } catch { /* noop */ }
+  };
+
   const fetchClients = async () => {
     if (!user) return;
-    setLoading(true);
     const targetStatus = showArchived ? "archived" : "active";
     const { data } = await supabase
       .from("profiles")
@@ -45,18 +71,25 @@ export default function CoachDashboard() {
       .eq("coach_id", user.id)
       .eq("role", "client")
       .eq("status", targetStatus);
-    setClients((data as Client[]) || []);
+    const result = (data as Client[]) || [];
+    setClients(result);
+    writeCache(showArchived, result);
     setLoading(false);
-  };
-
-  const reconcileOrphans = async () => {
-    if (!user) return;
-    await supabase.rpc("reconcile_orphan_clients", { _coach_id: user.id });
   };
 
   useEffect(() => {
     if (!user) return;
-    reconcileOrphans().then(() => fetchClients());
+
+    // Show cached data immediately
+    const cached = readCache(showArchived);
+    if (cached) {
+      setClients(cached);
+      setLoading(false);
+    }
+
+    // Fire-and-forget reconcile, fetch concurrently
+    supabase.rpc("reconcile_orphan_clients", { _coach_id: user.id }).then(() => {});
+    fetchClients();
   }, [user, showArchived]);
 
   const handleArchive = async () => {
@@ -65,6 +98,7 @@ export default function CoachDashboard() {
       .from("profiles")
       .update({ status: "archived", archived_at: new Date().toISOString() } as any)
       .eq("id", archiveTarget.id);
+    invalidateCache();
     toast({ title: "Client archived" });
     setArchiveTarget(null);
     fetchClients();
@@ -76,6 +110,7 @@ export default function CoachDashboard() {
       .from("profiles")
       .update({ status: "active", archived_at: null } as any)
       .eq("id", restoreTarget.id);
+    invalidateCache();
     toast({ title: "Client restored" });
     setRestoreTarget(null);
     fetchClients();
