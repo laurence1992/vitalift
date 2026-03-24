@@ -348,11 +348,11 @@ export default function ExerciseLibrary({
           </DialogHeader>
           <div className="space-y-4">
             {detailExercise?.image_url && (
-              <div className="flex items-center justify-center rounded-xl bg-secondary p-2">
-                <img
-                  src={resolveExerciseImage(detailExercise.image_url)}
+              <div className="flex items-center justify-center rounded-xl bg-secondary p-2 overflow-hidden">
+                <ExerciseThumb
+                  src={detailExercise.image_url}
                   alt={detailExercise.name}
-                  className="w-full max-h-[250px] rounded-xl object-contain"
+                  className="w-full max-h-[250px] rounded-xl"
                 />
               </div>
             )}
