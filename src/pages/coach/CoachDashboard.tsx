@@ -110,6 +110,7 @@ export default function CoachDashboard() {
       .from("profiles")
       .update({ status: "active", archived_at: null } as any)
       .eq("id", restoreTarget.id);
+    invalidateCache();
     toast({ title: "Client restored" });
     setRestoreTarget(null);
     fetchClients();
