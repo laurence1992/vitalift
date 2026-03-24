@@ -6,15 +6,6 @@ import { Dumbbell } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link, useNavigate } from "react-router-dom";
 
-const COACH_EMAILS = ["larry92roche@gmail.com"];
-
-async function enforceCoachRole(userId: string) {
-  const { error } = await supabase
-    .from("profiles")
-    .update({ role: "coach" as any })
-    .eq("id", userId);
-  if (error) console.error("Failed to enforce coach role:", error);
-}
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
