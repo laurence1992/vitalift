@@ -228,26 +228,60 @@ export default function ClientProfile() {
         )}
 
         <div>
-          <h2 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-3">Workout History</h2>
-          {workouts.length === 0 && <p className="text-sm text-muted-foreground">No workouts yet.</p>}
-          <div className="space-y-2">
-            {workouts.map((w) => (
-              <button
-                key={w.id}
-                onClick={() => viewWorkoutDetail(w.id)}
-                className="flex w-full items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 text-left hover:border-primary hover:bg-primary/5 active:scale-[0.98] transition-all"
-              >
-                <div>
-                  <p className="text-sm font-semibold text-foreground">{w.day_id}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {format(new Date(w.date), "MMM d, yyyy")}
-                    {w.duration_seconds ? ` · ${formatDuration(w.duration_seconds)}` : ""}
-                  </p>
-                </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              </button>
-            ))}
+          <div className="flex items-center gap-2 mb-3">
+            <h2 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Workout History</h2>
+            {workouts.length > 0 && (
+              <span className="text-[10px] font-medium text-muted-foreground">· {workouts.length} session{workouts.length !== 1 ? "s" : ""}</span>
+            )}
           </div>
+          {workouts.length === 0 && <p className="text-sm text-muted-foreground">No workouts yet.</p>}
+          {(() => {
+            const visible = showAllWorkouts ? workouts : workouts.slice(0, 3);
+            const grouped: Record<string, WorkoutRow[]> = {};
+            visible.forEach((w) => {
+              const key = format(new Date(w.date), "MMMM yyyy");
+              if (!grouped[key]) grouped[key] = [];
+              grouped[key].push(w);
+            });
+            return (
+              <div className="space-y-4">
+                {Object.entries(grouped).map(([month, items]) => (
+                  <div key={month}>
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-2">{month}</p>
+                    <div className="space-y-2">
+                      {items.map((w) => (
+                        <button
+                          key={w.id}
+                          onClick={() => viewWorkoutDetail(w.id)}
+                          className="flex w-full items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 text-left hover:border-primary hover:bg-primary/5 active:scale-[0.98] transition-all"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <p className="text-sm font-semibold text-foreground truncate">{dayLabels[w.day_id] || "Workout Session"}</p>
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">
+                              {format(new Date(w.date), "MMM d, yyyy")}
+                              {w.duration_seconds ? ` · ${formatDuration(w.duration_seconds)}` : ""}
+                            </span>
+                          </div>
+                          <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                {workouts.length > 3 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full gap-1.5 text-xs"
+                    onClick={() => setShowAllWorkouts(!showAllWorkouts)}
+                  >
+                    <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showAllWorkouts ? "rotate-180" : ""}`} />
+                    {showAllWorkouts ? "Show less" : `Show all ${workouts.length} sessions`}
+                  </Button>
+                )}
+              </div>
+            );
+          })()}
         </div>
 
         <div>
