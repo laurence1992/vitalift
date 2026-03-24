@@ -144,15 +144,6 @@ export default function Auth() {
           </button>
         </p>
 
-        <div className="text-center pt-2 border-t border-border">
-          <button
-            onClick={handleFixCoachAccess}
-            disabled={fixingCoach}
-            className="text-xs text-muted-foreground hover:text-primary hover:underline"
-          >
-            {fixingCoach ? "Fixing..." : "Fix my coach access"}
-          </button>
-        </div>
       </div>
     </div>
   );
