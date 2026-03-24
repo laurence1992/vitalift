@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { ArrowLeft, TrendingUp, MessageSquare, Archive, RotateCcw, Edit, Dumbbell, Clock, ChevronRight } from "lucide-react";
+import { ArrowLeft, TrendingUp, MessageSquare, Archive, RotateCcw, Edit, Dumbbell, Clock, ChevronRight, ChevronDown } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
