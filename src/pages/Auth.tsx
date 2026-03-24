@@ -16,7 +16,6 @@ export default function Auth() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [fixingCoach, setFixingCoach] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
