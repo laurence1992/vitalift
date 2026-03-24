@@ -40,6 +40,28 @@ function hasValidMedia(ex: CoachExercise): boolean {
   );
 }
 
+function ExerciseThumb({ src, alt, className = "" }: { src: string | null; alt: string; className?: string }) {
+  const [failed, setFailed] = useState(false);
+  const resolved = src ? resolveExerciseImage(src) : null;
+
+  if (!resolved || failed) {
+    return (
+      <div className={`bg-secondary flex items-center justify-center text-xs text-muted-foreground ${className}`}>
+        {alt.slice(0, 2).toUpperCase()}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={resolved}
+      alt={alt}
+      className={`object-contain ${className}`}
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 const emptyForm = {
   name: "", image_url: "", video_url: "", notes: "",
   category: "", muscle_group: "", equipment: "",
