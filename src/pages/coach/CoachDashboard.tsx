@@ -88,7 +88,7 @@ export default function CoachDashboard() {
     }
 
     // Fire-and-forget reconcile, fetch concurrently
-    supabase.rpc("reconcile_orphan_clients", { _coach_id: user.id }).catch(() => {});
+    supabase.rpc("reconcile_orphan_clients", { _coach_id: user.id }).then(() => {});
     fetchClients();
   }, [user, showArchived]);
 
