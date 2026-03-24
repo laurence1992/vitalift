@@ -57,9 +57,6 @@ export default function Auth() {
           setMessage("Check your email for a confirmation link, then sign in.");
           toast({ title: "Account created!", description: "Please confirm your email." });
         } else if (data.session && data.user) {
-          if (COACH_EMAILS.includes(email.toLowerCase())) {
-            await enforceCoachRole(data.user.id);
-          }
           toast({ title: "Account created & signed in!" });
         }
       }
