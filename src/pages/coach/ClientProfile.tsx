@@ -28,6 +28,8 @@ export default function ClientProfile() {
   const [selectedWorkout, setSelectedWorkout] = useState<string | null>(null);
   const [workoutSets, setWorkoutSets] = useState<WorkoutSetRow[]>([]);
   const [exerciseNames, setExerciseNames] = useState<Record<string, string>>({});
+  const [dayLabels, setDayLabels] = useState<Record<string, string>>({});
+  const [showAllWorkouts, setShowAllWorkouts] = useState(false);
 
   const load = async () => {
     if (!clientId) return;
@@ -38,7 +40,8 @@ export default function ClientProfile() {
       supabase.from("client_program_assignments").select("program_id").eq("client_id", clientId).eq("is_active", true).maybeSingle(),
     ]);
     setClient(clientRes.data as ClientData | null);
-    setWorkouts((workoutsRes.data as WorkoutRow[]) || []);
+    const rows = (workoutsRes.data as WorkoutRow[]) || [];
+    setWorkouts(rows);
     setProgress((progressRes.data as ProgressRow[]) || []);
     if (assignmentRes.data?.program_id) {
       const { data: prog } = await supabase.from("programs").select("id, name, updated_at").eq("id", assignmentRes.data.program_id).maybeSingle();
@@ -49,6 +52,16 @@ export default function ClientProfile() {
       const map: Record<string, string> = {};
       exes.forEach((e: any) => { map[e.id] = e.name; });
       setExerciseNames(map);
+    }
+    // Resolve day labels
+    const dayIds = [...new Set(rows.map((w) => w.day_id))];
+    if (dayIds.length > 0) {
+      const { data: days } = await supabase.from("program_days").select("id, label, day_note").in("id", dayIds);
+      const labels: Record<string, string> = {};
+      (days || []).forEach((d: any) => {
+        labels[d.id] = d.day_note ? `${d.label} – ${d.day_note}` : d.label;
+      });
+      setDayLabels(labels);
     }
   };
 
