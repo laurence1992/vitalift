@@ -67,31 +67,6 @@ export default function Auth() {
     setLoading(false);
   };
 
-  const handleFixCoachAccess = async () => {
-    setFixingCoach(true);
-    setError("");
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setError("You must be signed in first. Sign in, then click this again.");
-        setFixingCoach(false);
-        return;
-      }
-      if (!COACH_EMAILS.includes(user.email?.toLowerCase() ?? "")) {
-        setError("Your email is not in the coach list.");
-        setFixingCoach(false);
-        return;
-      }
-      await enforceCoachRole(user.id);
-      toast({ title: "Coach access restored!" });
-      navigate("/");
-      window.location.reload();
-    } catch (err: any) {
-      console.error("Fix coach error:", err);
-      setError("Failed to fix coach access.");
-    }
-    setFixingCoach(false);
-  };
 
   return (
     <div className="flex min-h-screen items-center justify-center px-5 bg-background">
