@@ -39,9 +39,6 @@ export default function Auth() {
           console.error("Sign in error:", error);
           setError(error.message);
         } else if (data.user) {
-          if (COACH_EMAILS.includes(email.toLowerCase())) {
-            await enforceCoachRole(data.user.id);
-          }
           toast({ title: "Signed in successfully!" });
         }
       } else {
