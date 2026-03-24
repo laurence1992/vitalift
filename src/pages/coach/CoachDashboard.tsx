@@ -98,6 +98,7 @@ export default function CoachDashboard() {
       .from("profiles")
       .update({ status: "archived", archived_at: new Date().toISOString() } as any)
       .eq("id", archiveTarget.id);
+    invalidateCache();
     toast({ title: "Client archived" });
     setArchiveTarget(null);
     fetchClients();
