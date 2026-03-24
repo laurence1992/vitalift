@@ -290,15 +290,9 @@ export default function ExerciseLibrary({
               className="flex items-center gap-3 rounded-2xl border border-border bg-card px-3 py-2.5 cursor-pointer hover:border-primary hover:bg-primary/5 active:scale-[0.98] transition-all"
               onClick={() => selectable ? onSelect?.(ex) : setDetailExercise(ex)}
             >
-              {ex.image_url ? (
-                <div className="h-11 w-11 shrink-0 rounded-xl bg-secondary overflow-hidden flex items-center justify-center">
-                  <img src={resolveExerciseImage(ex.image_url)} alt={ex.name} className="h-full w-full object-contain" />
-                </div>
-              ) : (
-                <div className="h-11 w-11 shrink-0 rounded-xl bg-secondary flex items-center justify-center text-xs text-muted-foreground">
-                  {ex.name.slice(0, 2)}
-                </div>
-              )}
+              <div className="h-11 w-11 shrink-0 rounded-xl bg-secondary overflow-hidden flex items-center justify-center">
+                <ExerciseThumb src={ex.image_url} alt={ex.name} className="h-full w-full rounded-xl" />
+              </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold truncate text-foreground">{ex.name}</p>
                 {meta ? (
