@@ -323,6 +323,7 @@ export default function ProgramWorkoutSession() {
     const pbs = await checkAndSavePBs();
     setFinalDuration(durationSeconds);
     setCompletionPBs(pbs);
+    clearStorage();
     setShowCompletion(true);
   };
 
@@ -479,7 +480,10 @@ export default function ProgramWorkoutSession() {
               <label className="mb-2 block text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Session Notes</label>
               <Textarea
                 value={sessionNotes}
-                onChange={(e) => setSessionNotes(e.target.value)}
+                onChange={(e) => {
+                  setSessionNotes(e.target.value);
+                  saveToStorage(exerciseLogs, workoutStarted, startTime, e.target.value);
+                }}
                 placeholder="How did it feel? Any PRs?"
                 className="min-h-[80px]"
               />
