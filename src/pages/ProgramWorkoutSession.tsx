@@ -52,6 +52,8 @@ function formatElapsed(seconds: number): string {
   return `${mm}:${ss}`;
 }
 
+const STORAGE_KEY_PREFIX = "workout_session_";
+
 export default function ProgramWorkoutSession() {
   const { dayId } = useParams<{ dayId: string }>();
   const navigate = useNavigate();
@@ -79,6 +81,37 @@ export default function ProgramWorkoutSession() {
   const [completionPBs, setCompletionPBs] = useState<{ exerciseName: string; weight: number }[]>([]);
   const [finalDuration, setFinalDuration] = useState(0);
 
+  // localStorage helpers
+  const storageKey = `${STORAGE_KEY_PREFIX}${dayId}`;
+
+  const saveToStorage = (logs: Record<string, SetLog[]>, started: boolean, start: string | null, notes: string) => {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify({ exerciseLogs: logs, workoutStarted: started, startTime: start, sessionNotes: notes }));
+    } catch {}
+  };
+
+  const clearStorage = () => {
+    try { localStorage.removeItem(storageKey); } catch {}
+  };
+
+  // Restore from localStorage on mount (after exercises load)
+  const restoredRef = useRef(false);
+
+  useEffect(() => {
+    if (restoredRef.current || exercises.length === 0) return;
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        if (saved.exerciseLogs) setExerciseLogs(saved.exerciseLogs);
+        if (saved.workoutStarted) setWorkoutStarted(true);
+        if (saved.startTime) setStartTime(saved.startTime);
+        if (saved.sessionNotes) setSessionNotes(saved.sessionNotes);
+      }
+    } catch {}
+    restoredRef.current = true;
+  }, [exercises, storageKey]);
+
   useEffect(() => {
     loadDay();
     if (user) loadPersonalBests();
@@ -100,6 +133,7 @@ export default function ProgramWorkoutSession() {
     const now = new Date().toISOString();
     setStartTime(now);
     setWorkoutStarted(true);
+    saveToStorage(exerciseLogs, true, now, sessionNotes);
   };
 
   const loadPersonalBests = async () => {
@@ -238,8 +272,11 @@ export default function ProgramWorkoutSession() {
   const updateSet = (peId: string, setIdx: number, field: "weight" | "reps", value: string) => {
     setExerciseLogs((prev) => {
       const sets = [...(prev[peId] || [])];
-      sets[setIdx] = { ...sets[setIdx], [field]: value === "" ? null : Number(value) };
-      return { ...prev, [peId]: sets };
+      const parsed = value === "" || value === null || value === undefined ? null : Number(value);
+      sets[setIdx] = { ...sets[setIdx], [field]: parsed };
+      const next = { ...prev, [peId]: sets };
+      saveToStorage(next, workoutStarted, startTime, sessionNotes);
+      return next;
     });
   };
 
@@ -269,7 +306,7 @@ export default function ProgramWorkoutSession() {
       const setRows = exercises.flatMap((ex) => {
         const logs = exerciseLogs[ex.id] || [];
         return logs
-          .filter((s) => s.weight != null || s.reps != null)
+          .filter((s) => s.weight !== null || s.reps !== null)
           .map((s) => ({
             workout_id: dbWorkout.id,
             exercise_id: ex.exercise_id,
@@ -286,6 +323,7 @@ export default function ProgramWorkoutSession() {
     const pbs = await checkAndSavePBs();
     setFinalDuration(durationSeconds);
     setCompletionPBs(pbs);
+    clearStorage();
     setShowCompletion(true);
   };
 
@@ -442,7 +480,10 @@ export default function ProgramWorkoutSession() {
               <label className="mb-2 block text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Session Notes</label>
               <Textarea
                 value={sessionNotes}
-                onChange={(e) => setSessionNotes(e.target.value)}
+                onChange={(e) => {
+                  setSessionNotes(e.target.value);
+                  saveToStorage(exerciseLogs, workoutStarted, startTime, e.target.value);
+                }}
                 placeholder="How did it feel? Any PRs?"
                 className="min-h-[80px]"
               />
