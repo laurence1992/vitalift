@@ -35,7 +35,7 @@ export default function Auth() {
       if (isLogin) {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
-          console.error("Sign in error:", error);
+          if (import.meta.env.DEV) console.error("Sign in error:", error);
           setError(error.message);
         } else if (data.user) {
           toast({ title: "Signed in successfully!" });
@@ -50,7 +50,7 @@ export default function Auth() {
           },
         });
         if (error) {
-          console.error("Sign up error:", error);
+          if (import.meta.env.DEV) console.error("Sign up error:", error);
           setError(error.message);
         } else if (data.user && !data.session) {
           setMessage("Check your email for a confirmation link, then sign in.");
@@ -60,7 +60,7 @@ export default function Auth() {
         }
       }
     } catch (err: any) {
-      console.error("Auth network error:", err);
+      if (import.meta.env.DEV) console.error("Auth network error:", err);
       setError("Network error. Please check your connection and try again.");
     }
     setLoading(false);
