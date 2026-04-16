@@ -20,6 +20,7 @@ import CoachDashboard from "./pages/coach/CoachDashboard";
 import ClientProfile from "./pages/coach/ClientProfile";
 import CoachExerciseLibraryPage from "./pages/coach/CoachExerciseLibraryPage";
 import ProgramWorkoutSession from "./pages/ProgramWorkoutSession";
+import AIProgramme from "./pages/AIProgramme";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -70,6 +71,9 @@ function AppRoutes() {
         <Route path="/workouts" element={<History />} />
         <Route path="/history/:workoutId" element={<WorkoutSummary />} />
         <Route path="/exercises" element={<Exercises />} />
+
+        {/* AI Programme */}
+        <Route path="/ai-programme" element={<AIProgramme />} />
 
         {/* Shared routes */}
         <Route path="/inbox" element={<Inbox />} />

@@ -1,4 +1,4 @@
-import { Home, MessageSquare, Settings, Users, Dumbbell, ClipboardList } from "lucide-react";
+import { Home, MessageSquare, Settings, Users, Dumbbell, ClipboardList, Sparkles } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -7,6 +7,7 @@ import { useUnreadCount } from "@/hooks/useUnreadCount";
 const clientTabs = [
   { path: "/", icon: Home, label: "Home" },
   { path: "/workouts", icon: ClipboardList, label: "Workouts" },
+  { path: "/ai-programme", icon: Sparkles, label: "AI Plan" },
   { path: "/inbox", icon: MessageSquare, label: "Inbox", badge: true },
   { path: "/settings", icon: Settings, label: "Settings" },
 ];
@@ -14,6 +15,7 @@ const clientTabs = [
 const coachTabs = [
   { path: "/", icon: Users, label: "Clients" },
   { path: "/training", icon: Dumbbell, label: "Training" },
+  { path: "/ai-programme", icon: Sparkles, label: "AI Plan" },
   { path: "/coach/exercises", icon: ClipboardList, label: "Exercises" },
   { path: "/inbox", icon: MessageSquare, label: "Inbox", badge: true },
   { path: "/settings", icon: Settings, label: "Settings" },
