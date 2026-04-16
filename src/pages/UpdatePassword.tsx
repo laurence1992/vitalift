@@ -42,7 +42,7 @@ export default function UpdatePassword() {
         refresh_token: refreshToken,
       }).then(({ error }) => {
         if (error) {
-          console.error("Failed to set session from hash:", error);
+          if (import.meta.env.DEV) console.error("Failed to set session from hash:", error);
           setExpired(true);
         } else {
           setReady(true);
@@ -119,7 +119,7 @@ export default function UpdatePassword() {
     try {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) {
-        console.error("Update password error:", error);
+        if (import.meta.env.DEV) console.error("Update password error:", error);
         if (error.message.includes("expired") || error.message.includes("invalid")) {
           setExpired(true);
         } else {
@@ -131,7 +131,7 @@ export default function UpdatePassword() {
         setTimeout(() => navigate("/auth"), 1500);
       }
     } catch (err: any) {
-      console.error("Network error:", err);
+      if (import.meta.env.DEV) console.error("Network error:", err);
       setError("Network error. Please try again.");
     }
     setLoading(false);

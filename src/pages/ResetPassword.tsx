@@ -21,13 +21,13 @@ export default function ResetPassword() {
         redirectTo: `${window.location.origin}/update-password`,
       });
       if (error) {
-        console.error("Reset error:", error);
+        if (import.meta.env.DEV) console.error("Reset error:", error);
         setError(error.message);
       } else {
         setMessage("Check your email for a password reset link!");
       }
     } catch (err: any) {
-      console.error("Network error:", err);
+      if (import.meta.env.DEV) console.error("Network error:", err);
       setError("Network error. Please try again.");
     }
     setLoading(false);
