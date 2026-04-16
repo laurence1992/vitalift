@@ -272,8 +272,11 @@ export default function ProgramWorkoutSession() {
   const updateSet = (peId: string, setIdx: number, field: "weight" | "reps", value: string) => {
     setExerciseLogs((prev) => {
       const sets = [...(prev[peId] || [])];
-      sets[setIdx] = { ...sets[setIdx], [field]: value === "" ? null : Number(value) };
-      return { ...prev, [peId]: sets };
+      const parsed = value === "" || value === null || value === undefined ? null : Number(value);
+      sets[setIdx] = { ...sets[setIdx], [field]: parsed };
+      const next = { ...prev, [peId]: sets };
+      saveToStorage(next, workoutStarted, startTime, sessionNotes);
+      return next;
     });
   };
 
@@ -303,7 +306,7 @@ export default function ProgramWorkoutSession() {
       const setRows = exercises.flatMap((ex) => {
         const logs = exerciseLogs[ex.id] || [];
         return logs
-          .filter((s) => s.weight != null || s.reps != null)
+          .filter((s) => s.weight !== null || s.reps !== null)
           .map((s) => ({
             workout_id: dbWorkout.id,
             exercise_id: ex.exercise_id,
