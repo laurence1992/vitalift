@@ -52,6 +52,8 @@ function formatElapsed(seconds: number): string {
   return `${mm}:${ss}`;
 }
 
+const STORAGE_KEY_PREFIX = "workout_session_";
+
 export default function ProgramWorkoutSession() {
   const { dayId } = useParams<{ dayId: string }>();
   const navigate = useNavigate();
@@ -79,6 +81,37 @@ export default function ProgramWorkoutSession() {
   const [completionPBs, setCompletionPBs] = useState<{ exerciseName: string; weight: number }[]>([]);
   const [finalDuration, setFinalDuration] = useState(0);
 
+  // localStorage helpers
+  const storageKey = `${STORAGE_KEY_PREFIX}${dayId}`;
+
+  const saveToStorage = (logs: Record<string, SetLog[]>, started: boolean, start: string | null, notes: string) => {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify({ exerciseLogs: logs, workoutStarted: started, startTime: start, sessionNotes: notes }));
+    } catch {}
+  };
+
+  const clearStorage = () => {
+    try { localStorage.removeItem(storageKey); } catch {}
+  };
+
+  // Restore from localStorage on mount (after exercises load)
+  const restoredRef = useRef(false);
+
+  useEffect(() => {
+    if (restoredRef.current || exercises.length === 0) return;
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        if (saved.exerciseLogs) setExerciseLogs(saved.exerciseLogs);
+        if (saved.workoutStarted) setWorkoutStarted(true);
+        if (saved.startTime) setStartTime(saved.startTime);
+        if (saved.sessionNotes) setSessionNotes(saved.sessionNotes);
+      }
+    } catch {}
+    restoredRef.current = true;
+  }, [exercises, storageKey]);
+
   useEffect(() => {
     loadDay();
     if (user) loadPersonalBests();
@@ -100,6 +133,7 @@ export default function ProgramWorkoutSession() {
     const now = new Date().toISOString();
     setStartTime(now);
     setWorkoutStarted(true);
+    saveToStorage(exerciseLogs, true, now, sessionNotes);
   };
 
   const loadPersonalBests = async () => {
