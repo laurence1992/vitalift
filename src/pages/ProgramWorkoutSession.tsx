@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, ExternalLink, Check, Trophy, Timer, Play } from "lucide-react";
+import { ArrowLeft, ExternalLink, Check, Trophy, Timer, Play, CircleCheck } from "lucide-react";
 import { formatCardioInterval } from "@/pages/coach/ExerciseLibrary";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { resolveExerciseImage } from "@/lib/exercise-image-map";
 import { WorkoutSessionSkeleton } from "@/components/Skeletons";
 import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type SetTarget = {
   set_index: number;
@@ -66,6 +77,7 @@ export default function ProgramWorkoutSession() {
   const [sessionNotes, setSessionNotes] = useState("");
   const [programId, setProgramId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   // Timer state
   const [workoutStarted, setWorkoutStarted] = useState(false);
@@ -80,6 +92,9 @@ export default function ProgramWorkoutSession() {
   const [showCompletion, setShowCompletion] = useState(false);
   const [completionPBs, setCompletionPBs] = useState<{ exerciseName: string; weight: number }[]>([]);
   const [finalDuration, setFinalDuration] = useState(0);
+
+  // Back confirmation dialog
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
 
   // localStorage helpers
   const storageKey = `${STORAGE_KEY_PREFIX}${dayId}`;
@@ -134,6 +149,20 @@ export default function ProgramWorkoutSession() {
     setStartTime(now);
     setWorkoutStarted(true);
     saveToStorage(exerciseLogs, true, now, sessionNotes);
+  };
+
+  const handleBackPress = () => {
+    if (workoutStarted) {
+      setShowLeaveDialog(true);
+    } else {
+      navigate(-1);
+    }
+  };
+
+  const handleConfirmLeave = () => {
+    setShowLeaveDialog(false);
+    if (timerRef.current) clearInterval(timerRef.current);
+    navigate(-1);
   };
 
   const loadPersonalBests = async () => {
@@ -281,7 +310,9 @@ export default function ProgramWorkoutSession() {
   };
 
   const finishWorkout = async () => {
-    if (!user || !dayId || !startTime) return;
+    if (!user || !dayId || !startTime || saving) return;
+
+    setSaving(true);
 
     // Stop timer
     if (timerRef.current) clearInterval(timerRef.current);
@@ -289,7 +320,7 @@ export default function ProgramWorkoutSession() {
     const endTime = new Date().toISOString();
     const durationSeconds = Math.round((new Date(endTime).getTime() - new Date(startTime).getTime()) / 1000);
 
-    const { data: dbWorkout } = await supabase
+    const { data: dbWorkout, error: workoutError } = await supabase
       .from("workouts")
       .insert({
         client_id: user.id,
@@ -302,28 +333,44 @@ export default function ProgramWorkoutSession() {
       .select()
       .single();
 
-    if (dbWorkout) {
-      const setRows = exercises.flatMap((ex) => {
-        const logs = exerciseLogs[ex.id] || [];
-        return logs
-          .filter((s) => s.weight !== null || s.reps !== null)
-          .map((s) => ({
-            workout_id: dbWorkout.id,
-            exercise_id: ex.exercise_id,
-            set_number: s.set_index,
-            weight: s.weight,
-            reps: s.reps,
-          }));
-      });
-      if (setRows.length > 0) {
-        await supabase.from("workout_sets").insert(setRows);
+    if (workoutError || !dbWorkout) {
+      toast.error("Failed to save workout. Please try again.");
+      // Restart timer
+      if (startTime) {
+        timerRef.current = setInterval(() => {
+          setElapsed(Math.floor((Date.now() - new Date(startTime).getTime()) / 1000));
+        }, 1000);
+      }
+      setSaving(false);
+      return;
+    }
+
+    const setRows = exercises.flatMap((ex) => {
+      const logs = exerciseLogs[ex.id] || [];
+      return logs
+        .filter((s) => s.weight !== null || s.reps !== null)
+        .map((s) => ({
+          workout_id: dbWorkout.id,
+          exercise_id: ex.exercise_id,
+          set_number: s.set_index,
+          weight: s.weight,
+          reps: s.reps,
+        }));
+    });
+
+    if (setRows.length > 0) {
+      const { error: setsError } = await supabase.from("workout_sets").insert(setRows);
+      if (setsError) {
+        toast.error("Workout saved but some sets failed to save.");
       }
     }
 
     const pbs = await checkAndSavePBs();
+    toast.success("Workout saved ✅");
     setFinalDuration(durationSeconds);
     setCompletionPBs(pbs);
     clearStorage();
+    setSaving(false);
     setShowCompletion(true);
   };
 
@@ -336,7 +383,7 @@ export default function ProgramWorkoutSession() {
       {/* Top bar */}
       <div className="sticky top-0 z-40 border-b border-border bg-background">
         <div className="flex items-center gap-3 px-5 py-3">
-          <button onClick={() => navigate(-1)} className="text-foreground active:scale-[0.97]">
+          <button onClick={handleBackPress} className="text-foreground active:scale-[0.97]">
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="flex-1">
@@ -361,7 +408,7 @@ export default function ProgramWorkoutSession() {
         {!workoutStarted && (
           <Button
             onClick={handleStartWorkout}
-            className="w-full h-14 text-base font-semibold gap-2"
+            className="w-full h-14 text-base font-semibold gap-2 animate-pulse shadow-[0_0_20px_hsl(var(--primary)/0.4)]"
             size="lg"
           >
             <Play className="h-5 w-5" />
@@ -423,17 +470,25 @@ export default function ProgramWorkoutSession() {
                   </p>
 
                   <div className="space-y-2">
-                    <div className="grid grid-cols-[40px_1fr_1fr] gap-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1">
+                    <div className="grid grid-cols-[52px_1fr_1fr] gap-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1">
                       <span>Set</span>
                       <span>Weight (kg)</span>
                       <span>Reps</span>
                     </div>
                     {sets.map((set, i) => {
                       const setTarget = ex.sets[i];
+                      const isComplete = set.weight !== null && set.reps !== null;
                       return (
                         <div key={i}>
-                          <div className="grid grid-cols-[40px_1fr_1fr] gap-2 items-center">
-                            <span className="text-center text-sm font-bold text-muted-foreground">{set.set_index}</span>
+                          <div className="grid grid-cols-[52px_1fr_1fr] gap-2 items-center">
+                            <div className="flex items-center justify-center gap-1">
+                              {isComplete ? (
+                                <CircleCheck className="h-4 w-4 text-emerald-500 shrink-0" />
+                              ) : (
+                                <span className="w-4" />
+                              )}
+                              <span className="text-sm font-bold text-muted-foreground">{set.set_index}</span>
+                            </div>
                             <Input
                               type="number"
                               inputMode="decimal"
@@ -454,7 +509,7 @@ export default function ProgramWorkoutSession() {
                             />
                           </div>
                           {setTarget?.coach_note && (
-                            <p className="text-[10px] text-primary italic ml-[48px] mt-0.5">
+                            <p className="text-[10px] text-primary italic ml-[60px] mt-0.5">
                               💬 {setTarget.coach_note}
                             </p>
                           )}
@@ -496,9 +551,14 @@ export default function ProgramWorkoutSession() {
               </div>
             )}
 
-            <Button onClick={finishWorkout} className="w-full h-12 text-base font-semibold" size="lg">
+            <Button
+              onClick={finishWorkout}
+              disabled={saving}
+              className="w-full h-12 text-base font-semibold"
+              size="lg"
+            >
               <Check className="mr-2 h-5 w-5" />
-              Finish Workout
+              {saving ? "Saving…" : "Finish Workout"}
             </Button>
           </>
         )}
@@ -553,6 +613,22 @@ export default function ProgramWorkoutSession() {
           </div>
         </div>
       )}
+
+      {/* Leave Workout Confirmation Dialog */}
+      <AlertDialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Leave workout?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your progress will be lost.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmLeave}>Leave</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
