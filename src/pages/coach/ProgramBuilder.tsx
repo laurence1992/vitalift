@@ -50,12 +50,13 @@ type ProgramDay = {
 };
 
 type Props = {
-  clientId: string;
+  clientId?: string;
   programId?: string | null;
   onSaved: () => void;
+  mode?: "client" | "personal" | "template";
 };
 
-export default function ProgramBuilder({ clientId, programId, onSaved }: Props) {
+export default function ProgramBuilder({ clientId, programId, onSaved, mode = "client" }: Props) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [name, setName] = useState("");
@@ -280,23 +281,31 @@ export default function ProgramBuilder({ clientId, programId, onSaved }: Props) 
       } else {
         const { data: newProg } = await supabase
           .from("programs")
-          .insert({ coach_id: user.id, name, description })
+          .insert({
+            coach_id: user.id,
+            name,
+            description,
+            ...(mode === "personal" ? { is_coach_personal: true } : {}),
+            ...(mode === "template" ? { is_template: true } : {}),
+          } as any)
           .select("id")
           .single();
         if (!newProg) throw new Error("Failed to create program");
         pid = newProg.id;
 
-        await supabase
-          .from("client_program_assignments")
-          .update({ is_active: false } as any)
-          .eq("client_id", clientId)
-          .eq("is_active", true);
+        if (mode === "client" && clientId) {
+          await supabase
+            .from("client_program_assignments")
+            .update({ is_active: false } as any)
+            .eq("client_id", clientId)
+            .eq("is_active", true);
 
-        await supabase.from("client_program_assignments").insert({
-          client_id: clientId,
-          program_id: pid,
-          is_active: true,
-        });
+          await supabase.from("client_program_assignments").insert({
+            client_id: clientId,
+            program_id: pid,
+            is_active: true,
+          });
+        }
       }
 
       for (const day of days) {

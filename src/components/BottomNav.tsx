@@ -1,24 +1,26 @@
-import { Home, MessageSquare, Settings, Users, Dumbbell, ClipboardList, Sparkles } from "lucide-react";
+import { Home, MessageSquare, Users, Dumbbell, ClipboardList, Sparkles, PersonStanding, TrendingUp, Utensils } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useUnreadCount } from "@/hooks/useUnreadCount";
 
 const clientTabs = [
-  { path: "/", icon: Home, label: "Home" },
-  { path: "/workouts", icon: ClipboardList, label: "Workouts" },
-  { path: "/ai-programme", icon: Sparkles, label: "AI Plan" },
-  { path: "/inbox", icon: MessageSquare, label: "Inbox", badge: true },
-  { path: "/settings", icon: Settings, label: "Settings" },
+  { path: "/",             icon: Home,          label: "Home" },
+  { path: "/workouts",     icon: ClipboardList, label: "Workouts" },
+  { path: "/cardio",       icon: PersonStanding,label: "Cardio" },
+  { path: "/nutrition",    icon: Utensils,      label: "Nutrition" },
+  { path: "/progress",     icon: TrendingUp,    label: "Progress" },
+  { path: "/ai-programme", icon: Sparkles,       label: "AI Plan" },
+  { path: "/inbox",        icon: MessageSquare,  label: "Inbox", badge: true },
 ];
 
 const coachTabs = [
-  { path: "/", icon: Users, label: "Clients" },
-  { path: "/training", icon: Dumbbell, label: "Training" },
-  { path: "/ai-programme", icon: Sparkles, label: "AI Plan" },
-  { path: "/coach/exercises", icon: ClipboardList, label: "Exercises" },
-  { path: "/inbox", icon: MessageSquare, label: "Inbox", badge: true },
-  { path: "/settings", icon: Settings, label: "Settings" },
+  { path: "/",               icon: Users,          label: "Clients" },
+  { path: "/training",       icon: Dumbbell,       label: "Training" },
+  { path: "/cardio",         icon: PersonStanding, label: "Cardio" },
+  { path: "/ai-programme",   icon: Sparkles,       label: "AI Plan" },
+  { path: "/coach/exercises",icon: ClipboardList,  label: "Exercises" },
+  { path: "/inbox",          icon: MessageSquare,  label: "Inbox", badge: true },
 ];
 
 export default function BottomNav() {

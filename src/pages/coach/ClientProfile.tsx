@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { ArrowLeft, TrendingUp, MessageSquare, Archive, RotateCcw, Edit, Dumbbell, Clock, ChevronRight, ChevronDown } from "lucide-react";
+import { ArrowLeft, TrendingUp, MessageSquare, Archive, RotateCcw, Edit, Dumbbell, Clock, ChevronRight, ChevronDown, Camera, X } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
@@ -14,6 +14,7 @@ type WorkoutRow = { id: string; day_id: string; date: string; session_notes: str
 type WorkoutSetRow = { exercise_id: string; set_number: number; weight: number | null; reps: number | null };
 type ProgressRow = { id: string; date: string; bodyweight: number | null; notes: string | null };
 type ProgramInfo = { id: string; name: string; updated_at: string };
+type PhotoRow = { id: string; storage_path: string; taken_at: string; notes: string | null; url?: string };
 
 export default function ClientProfile() {
   const { clientId } = useParams<{ clientId: string }>();
@@ -30,14 +31,17 @@ export default function ClientProfile() {
   const [exerciseNames, setExerciseNames] = useState<Record<string, string>>({});
   const [dayLabels, setDayLabels] = useState<Record<string, string>>({});
   const [showAllWorkouts, setShowAllWorkouts] = useState(false);
+  const [photos, setPhotos] = useState<PhotoRow[]>([]);
+  const [lightboxPhoto, setLightboxPhoto] = useState<PhotoRow | null>(null);
 
   const load = async () => {
     if (!clientId) return;
-    const [clientRes, workoutsRes, progressRes, assignmentRes] = await Promise.all([
+    const [clientRes, workoutsRes, progressRes, assignmentRes, photosRes] = await Promise.all([
       supabase.from("profiles").select("id, name, email, status").eq("id", clientId).maybeSingle(),
       supabase.from("workouts").select("*").eq("client_id", clientId).order("date", { ascending: false }),
       supabase.from("progress_entries").select("*").eq("client_id", clientId).order("date", { ascending: true }),
       supabase.from("client_program_assignments").select("program_id").eq("client_id", clientId).eq("is_active", true).maybeSingle(),
+      supabase.from("progress_photos").select("id, storage_path, taken_at, notes").eq("client_id", clientId).order("taken_at", { ascending: false }) as any,
     ]);
     setClient(clientRes.data as ClientData | null);
     const rows = (workoutsRes.data as WorkoutRow[]) || [];
@@ -63,6 +67,17 @@ export default function ClientProfile() {
       });
       setDayLabels(labels);
     }
+    // Load progress photos with signed URLs
+    const rawPhotos: PhotoRow[] = (photosRes.data as any) || [];
+    const withUrls = await Promise.all(
+      rawPhotos.map(async (p) => {
+        const { data } = await supabase.storage
+          .from("progress-photos")
+          .createSignedUrl(p.storage_path, 3600);
+        return { ...p, url: data?.signedUrl };
+      })
+    );
+    setPhotos(withUrls.filter((p) => p.url));
   };
 
   useEffect(() => { load(); }, [clientId]);
@@ -297,7 +312,67 @@ export default function ClientProfile() {
             ))}
           </div>
         </div>
+
+        {/* Progress Photos */}
+        <div className="pb-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Camera className="h-4 w-4 text-primary" />
+            <h2 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Check-in Photos</h2>
+            {photos.length > 0 && (
+              <span className="text-[10px] font-medium text-muted-foreground">· {photos.length}</span>
+            )}
+          </div>
+          {photos.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No check-in photos yet. The client can upload photos from their home screen.</p>
+          ) : (
+            <div className="grid grid-cols-3 gap-2">
+              {photos.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => setLightboxPhoto(p)}
+                  className="relative aspect-square rounded-xl overflow-hidden border border-border hover:border-primary transition-colors"
+                >
+                  <img
+                    src={p.url}
+                    alt={`Check-in ${p.taken_at}`}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-1.5 py-1">
+                    <p className="text-[9px] text-white">{format(new Date(p.taken_at), "d MMM yy")}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Lightbox */}
+      {lightboxPhoto && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-4"
+          onClick={() => setLightboxPhoto(null)}
+        >
+          <button
+            className="absolute top-4 right-4 text-white"
+            onClick={() => setLightboxPhoto(null)}
+          >
+            <X className="h-6 w-6" />
+          </button>
+          <img
+            src={lightboxPhoto.url}
+            alt="Progress photo"
+            className="max-h-[80dvh] max-w-full rounded-2xl object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+          <p className="text-white/70 text-sm mt-3">
+            {format(new Date(lightboxPhoto.taken_at), "MMMM d, yyyy")}
+          </p>
+          {lightboxPhoto.notes && (
+            <p className="text-white/50 text-xs mt-1">{lightboxPhoto.notes}</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
